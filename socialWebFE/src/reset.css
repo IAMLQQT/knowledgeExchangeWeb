@@ -1,0 +1,43 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+ul,
+li {
+  list-style: none;
+}
+
+a {
+  display: inline-block;
+  text-decoration: none;
+}
+a:visited {
+  text-decoration: none !important;
+  color: black;
+}
+a:hover {
+  text-decoration: none;
+  color: black;
+}
+a:focus {
+  text-decoration: none;
+  color: black;
+}
+a:hover,
+a:active {
+  text-decoration: none !important;
+  color: black;
+}
+img,
+span {
+  display: inline-block;
+}
+
+input,
+button {
+  border: none;
+  outline: none;
+  background: none;
+}

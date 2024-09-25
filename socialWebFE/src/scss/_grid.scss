@@ -1,0 +1,48 @@
+@import "./media";
+$cols: 12;
+$gutter: 20px;
+
+.row {
+  max-width: 100%;
+
+  @for $i from 1 through $cols {
+    @include xs {
+      .col-xs-#{$i} {
+        width: calc(100% / $cols) * $i;
+        padding: calc($gutter/2);
+      }
+    }
+  }
+  @for $i from 1 through $cols {
+    @include sm {
+      .col-sm-#{$i} {
+        width: calc(100% / $cols) * $i;
+        padding: calc($gutter/2);
+      }
+    }
+  }
+  @for $i from 1 through $cols {
+    @include md {
+      .col-md-#{$i} {
+        width: calc(100% / $cols) * $i;
+        padding: calc($gutter/2);
+      }
+    }
+  }
+  @for $i from 1 through $cols {
+    @include lg {
+      .col-lg-#{$i} {
+        width: calc(100% / $cols) * $i;
+        padding: calc($gutter/2);
+      }
+    }
+  }
+  @for $i from 1 through $cols {
+    @include xl {
+      .col-xl-#{$i} {
+        width: calc(100% / $cols) * $i;
+        padding: calc($gutter/2);
+      }
+    }
+  }
+}

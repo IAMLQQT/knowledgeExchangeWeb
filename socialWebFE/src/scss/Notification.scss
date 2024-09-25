@@ -1,0 +1,51 @@
+// src/components/FriendRequestNotification.scss
+.friend-request-notification {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #fff;
+  
+    .profile-picture {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+  
+    .notification-content {
+      flex-grow: 1;
+  
+      p {
+        margin: 0;
+        font-size: 16px;
+      }
+  
+      .notification-actions {
+        margin-top: 5px;
+  
+        .accept-button,
+        .decline-button {
+          padding: 5px 10px;
+          border: none;
+          border-radius: 3px;
+          cursor: pointer;
+          margin-right: 5px;
+          transition: 0.3s;
+          &.accept-button {
+            background-color: #4CAF50;
+            color: #fff;
+          }
+          &.decline-button {
+            background-color: #f44336;
+            color: #fff;
+          }
+          &:hover {
+            opacity: 0.6;
+          }
+        }
+      }
+    }
+  }
+  

@@ -1,0 +1,299 @@
+.header {
+  position: sticky;
+  top: 2rem;
+  margin: 2rem 1rem;
+  font-size: 2rem;
+  background-color: white;
+  padding: 1rem 2rem;
+  border-radius: 2rem;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  z-index: 15;
+  .info-ctn {
+    gap: 5rem;
+    flex-wrap: unset;
+    width: 66%;
+    justify-content: space-between;
+    .search-bar {
+      min-width: 70%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+
+      .advanced-search-form {
+        position: absolute;
+        top: 5rem;
+        width: 100%;
+        display: flex;
+        gap: 1.2rem;
+        background-color: white;
+        padding: 1rem;
+        border: 1px solid #000;
+        .col {
+          div {
+            p {
+              color: #6c6c6c;
+              font-size: 1.6rem;
+              margin: 1rem 0;
+            }
+            span {
+              color: #000;
+              font-size: 1.6rem;
+              font-weight: 600;
+            }
+          }
+          input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 1rem;
+            border: 1px solid #ccc;
+            margin: 1rem 0;
+          }
+        }
+      }
+    }
+    .search-select {
+      width: 200px;
+      height: 35px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+      font-size: 16px;
+      color: #333;
+      background-color: #fff;
+      appearance: none; // Removes the default browser styling
+      cursor: pointer;
+
+      option {
+        color: #333;
+        background-color: #fff;
+      }
+    }
+    .user-notification {
+      button {
+        position: relative;
+        padding: 10px;
+        border-radius: 50%;
+        transition: 0.3s;
+        i {
+          font-size: 1.2em;
+          color: #6c6c6c;
+        }
+        &:hover {
+          cursor: pointer;
+          background-color:#eaedfb;
+        }
+        span {
+          position: absolute;
+          color: whitesmoke;
+          top: 0;
+          right: 0;
+          padding: 0 4px;
+          border-radius: 50%;
+          background-color: red;
+          font-size: 12px;
+        }
+      }
+      .notification-dropdown {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        z-index: 1000;
+      }
+    }
+    .user-info {
+      gap: 2rem;
+      flex-wrap: unset;
+      cursor: pointer;
+      position: relative;
+
+      .user-ava {
+        position: relative;
+        width: 4rem;
+        .ava {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+        }
+        .icon {
+          position: absolute;
+          bottom: 1px;
+          padding: 4px;
+          width: 1.5rem;
+          right: -3px;
+
+          transform: rotate(180deg);
+          background-color: #d7d7d7; /* Set the background color of the circle */
+          border-radius: 50%; /* Create a circular shape */
+          overflow: hidden;
+        }
+      }
+
+      p {
+        font-size: 0.75em;
+      }
+      button {
+        display: flex;
+        max-width: 100%;
+        flex-wrap: nowrap;
+        img {
+          display: block;
+          width: 2rem;
+        }
+        text-overflow: clip;
+        white-space: nowrap;
+      }
+
+      .menu {
+        position: absolute;
+        z-index: 2;
+        display: block;
+        top: 5rem;
+        right: -1rem;
+        list-style-type: none;
+        padding: 1rem;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        border-radius: 1rem;
+        width: 30rem;
+        background-color: white;
+        .menu-item {
+          button {
+            display: flex;
+            gap: 2rem;
+            .ava {
+              width: 4rem;
+              height: 4rem;
+              border-radius: 50%;
+            }
+          }
+        }
+      }
+
+      .menu > li {
+        margin-bottom: 1rem;
+        padding: 1rem;
+      }
+
+      .menu > li:hover {
+        background-color: lightgray;
+        border-radius: 1rem;
+        transition: all 0.2s ease-in-out;
+      }
+
+      .menu > li > button {
+        width: 100%;
+        height: 100%;
+        text-align: left;
+        background: none;
+        color: inherit;
+        border: none;
+        padding: 5px;
+        margin: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+    }
+    .search-bar {
+      flex-grow: 1;
+      input {
+        border-radius: 2rem;
+        padding: 1rem 2rem;
+        font-size: large;
+        background-color: #eaedfb;
+        width: 100%;
+        &:focus {
+          border: 1px solid #3333;
+        }
+      }
+    }
+  }
+  .nav-header {
+    gap: 2rem;
+    p {
+      padding: 0.8rem 2rem;
+      background-color: rgba(161, 188, 212, 0.614);
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      &:hover {
+        background-color: #4361ee;
+        color: white;
+      }
+    }
+    .active {
+      background-color: #4361ee;
+      color: white;
+    }
+  }
+  .login {
+    cursor: pointer;
+    margin-right: 30px;
+    font-weight: 800;
+    transition: 0.3s;
+    &:hover {
+      transform: translateX(5px);
+    }
+  }
+}
+
+@media (max-width: 1220px) {
+  .header {
+    position: unset;
+    justify-content: center !important;
+    .nav-header {
+      width: 100%;
+      order: 2;
+      margin-top: 2rem;
+      justify-content: start !important;
+      flex-wrap: nowrap !important;
+    }
+
+    .info-ctn {
+      width: 100%;
+      justify-content: space-between;
+
+      .user-info {
+        margin-right: 2rem;
+      }
+    }
+  }
+}
+@media (max-width: 1024px) {
+  .header {
+    .nav-header {
+      p {
+        font-size: 0.75em;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .header {
+    .nav-header {
+      p {
+        font-size: 0.6em;
+      }
+    }
+    .info-ctn {
+      gap: 0;
+      .user-info {
+        margin-left: 1rem;
+        img {
+          width: 3rem;
+        }
+        p {
+          font-size: 0.5em;
+        }
+      }
+    }
+  }
+}

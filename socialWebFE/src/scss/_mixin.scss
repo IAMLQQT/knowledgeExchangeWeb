@@ -1,0 +1,27 @@
+
+@mixin shape ($w,$h,$color:null){
+    width:$w;
+    height: $h;
+    @if $color
+    {
+        background-color: $color;
+    }
+    
+}
+@mixin circle($size){
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    @content;
+}
+@mixin text-white
+{
+color: aliceblue;
+}
+@mixin p-center
+{
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%,-50%);
+}

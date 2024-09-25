@@ -1,0 +1,23 @@
+.user-search {
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    border-radius: 2rem;
+    padding: 2rem;
+    height: 85vh;
+    h1 {
+      margin: 2rem 0;
+    }
+    input {
+      border: 1px solid #000;
+      padding: 1rem;
+      font-size: 2rem;
+      width: 30%;
+    }
+    .user-ctn {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  }

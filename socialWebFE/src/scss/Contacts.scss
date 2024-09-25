@@ -1,0 +1,76 @@
+.contact {
+  position: sticky;
+  top: 11rem;
+  border-radius: 2rem;
+  padding: 0.9rem 2rem;
+
+  flex-grow: 1;
+  background: #fcfcfc;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  h3 {
+    font-size: 2em;
+    margin-bottom: 0.75em;
+    padding-bottom: 0.5em;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.357);
+    text-align: center;
+  }
+
+  img {
+    width: 2em;
+    display: block;
+    border-radius: 2rem;
+  }
+  .contact-item {
+    margin-bottom: 2em;
+    cursor: pointer;
+    transition: 0.3s;
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+    p {
+      font-size: 1.3em;
+      margin-left: 0.5em;
+    }
+    &:hover {
+      transform: translateX(5px);
+    }
+  }
+}
+
+@media (max-width: 1250px) {
+  .contact {
+    position: unset;
+    h3 {
+      font-size: 1.5em;
+    }
+    img {
+      width: 1em;
+    }
+    .contact-item {
+      p {
+        font-size: 1em;
+      }
+    }
+  }
+}
+
+@media (max-width: 950px) {
+  .contact {
+    h3 {
+      font-size: 1em;
+    }
+    img {
+      width: 0.75em;
+    }
+    .contact-item {
+      p {
+        font-size: 0.5em;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .contact {
+    display: none;
+  }
+}

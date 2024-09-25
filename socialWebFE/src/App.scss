@@ -1,0 +1,58 @@
+@import "scss/flex";
+@import "scss/grid";
+@import "scss/mixin";
+
+@import url("https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800;900&display=swap");
+
+html,
+body,
+input,
+button {
+  font-family: "Gabarito", sans-serif;
+  font-size: 16px;
+}
+
+.App {
+  max-width: 1610px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 30rem calc(100% - 30rem);
+  align-items: start;
+  grid-template-areas: "navbar main-ctn";
+  position: relative;
+  overflow-x: hidden;
+  .chatbox-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    position: fixed;
+    bottom: 0;
+    right: 2rem;
+    z-index: 15;
+  }
+}
+.container {
+  max-width: 1440px;
+  margin: auto;
+}
+.content {
+  align-items: start;
+  flex-wrap: nowrap;
+  margin: 1rem;
+  gap: 2rem;
+}
+
+.newsfeed {
+  width: 70%;
+}
+
+@media (max-width: 820px) {
+  .App {
+    display: unset;
+  }
+}
+@media (max-width: 576px) {
+  .newsfeed {
+    width: 100%;
+  }
+}
