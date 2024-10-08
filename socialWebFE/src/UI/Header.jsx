@@ -99,7 +99,7 @@ function Header({ user, tabSelected, setTabSelected }) {
             navigate("/login");
           }}
         >
-          My Community
+          My Community hello
         </p>
       </div>
 
