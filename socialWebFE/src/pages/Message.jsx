@@ -8,6 +8,7 @@ import { useUser } from "../UserProvider";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Blocks, TailSpin } from "react-loader-spinner";
 import moment from "moment";
+import Linkify from 'react-linkify';
 import { Navigate, useNavigate } from "react-router-dom";
 
 function Message() {
@@ -23,6 +24,9 @@ function Message() {
   const [hasMore, setHasMore] = useState(true);
   const { token } = useAuth();
   const { user } = useUser();
+  const [selectedUser, setSelectedUser] = useState(null);
+  console.log("user",);
+
   const bottomRef = useRef();
   const prevLength = useRef(0);
   const page = useRef(1);
@@ -275,9 +279,8 @@ function Message() {
           <h2>Chat list</h2>
           {recipientInfo?.map((chat) => (
             <div
-              className={`message-info ${
-                chat.user_id === selectedReceiverId && "selected"
-              }`}
+              className={`message-info ${chat.user_id === selectedReceiverId && "selected"
+                }`}
               key={chat.user_id}
               onClick={() => {
                 const roomId = chatInfo.find(
@@ -285,6 +288,7 @@ function Message() {
                 )?.room_id;
                 setSelectedReceiverId(chat.user_id);
                 setSelectedRoom(roomId);
+                setSelectedUser(chat);
               }}
             >
               <img
@@ -318,51 +322,48 @@ function Message() {
               <p className="selection-noti">Select your contact to chat!</p>
             )}
             {selectedRoom && (
-              <InfiniteScroll
-                dataLength={chatMessages.length} //This is important field to render the next data
-                next={fetchData} // Use throttled function
-                hasMore={hasMore}
-                loader={
-                  <TailSpin
-                    visible={true}
-                    height="80"
-                    width="80"
-                    color="#c9c9c9"
-                    ariaLabel="tail-spin-loading"
-                    radius="1"
-                    wrapperStyle={{ alignSelf: "center" }}
-                    wrapperClass=""
-                  />
-                }
-                endMessage={
-                  <p style={{ textAlign: "center" }}>
-                    <b>Yay! You have seen it all</b>
+          <InfiniteScroll
+          dataLength={chatMessages.length}
+          next={fetchData}
+          hasMore={hasMore}
+          loader={
+            <TailSpin
+              visible={true}
+              height="80"
+              width="80"
+              color="#c9c9c9"
+              ariaLabel="tail-spin-loading"
+              radius="1"
+              wrapperStyle={{ alignSelf: "center" }}
+              wrapperClass=""
+            />
+          }
+          endMessage={
+            <p style={{ textAlign: "center" }}>
+              <b>Yay! You have seen it all</b>
+            </p>
+          }
+          style={{ display: "flex", flexDirection: "column-reverse" }}
+          inverse={true}
+          scrollableTarget="scrollableDiv"
+        >
+          {chatMessages
+            .slice()
+            .reverse()
+            .map((mess, index) => {
+              const isUserMessage = mess?.user_id === user?.user?.user_id;
+              return (
+                <Linkify key={index}>
+                  <p
+                    className={`chat-message ${isUserMessage ? "user-message" : "incoming-message"}`}
+                  >
+                    {mess.message}
                   </p>
-                }
-                style={{ display: "flex", flexDirection: "column-reverse" }} //To put endMessage and loader to the top.
-                inverse={true} //
-                scrollableTarget="scrollableDiv" // Specify the target scrollable container
-              >
-                {chatMessages
-                  .slice()
-                  .reverse()
-                  .map((mess, index) => {
-                    return (
-                      <p
-                        className={`chat-message ${
-                          mess?.user_id === user?.user?.user_id
-                            ? "user-message"
-                            : "incoming-message"
-                        }`}
-                        key={index}
-                        // eslint-disable-next-line react/no-unknown-property
-                        timestamp={formatTimestamp(mess.timestamp)}
-                      >
-                        {mess.message}
-                      </p>
-                    );
-                  })}
-              </InfiniteScroll>
+                </Linkify>
+              );
+            })}
+        </InfiniteScroll>
+        
             )}
             <div ref={bottomRef}></div>
           </div>
@@ -378,7 +379,39 @@ function Message() {
             <img src="/comment-icon.png" alt="send-icon" />
           </div>
         </div>
+        <div className="chat-user-info">
+          {selectedUser ? (
+            <div className="info flex a-center j-center">
+              <img src={selectedUser.profile_picture} alt="User Profile" />
+              <h4>{selectedUser.first_name} {selectedUser.last_name}</h4>
+              <button
+                onClick={() => navigate(`/profile/${selectedUser.user_id}`)} // Điều hướng tới trang cá nhân của người dùng
+                className="profile-btn flex a-center j-center"
+              >
+                <i class="fa-solid fa-user-tie"></i>
+                View Profile
+              </button>
+              <div className="storage-share">
+                <button className="files flex a-cente">
+                  Files
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <button className="link flex a-center">
+                  Link
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+              </div>
+              <button className="delete-chat">
+                Detele Chat
+              </button>
+            </div>
+
+          ) : (
+            <p>Click on a user to see their details</p>
+          )}
+        </div>
       </div>
+
     </div>
   );
 }

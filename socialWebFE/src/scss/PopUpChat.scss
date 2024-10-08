@@ -1,0 +1,26 @@
+.popup-menu {
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 100;
+    top : 0;
+    right: 101%;
+    width: 55%;
+  }
+  
+  .popup-menu ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .popup-menu ul li {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .popup-menu ul li:hover {
+    background-color: #f0f0f0;
+  }
