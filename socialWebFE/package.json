@@ -24,7 +24,6 @@
     "react-content-loader": "^6.2.1",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
-    "react-linkify": "^1.0.0-alpha",
     "react-loader-spinner": "^6.1.6",
     "react-modal": "^3.16.1",
     "react-paginate": "^8.2.0",

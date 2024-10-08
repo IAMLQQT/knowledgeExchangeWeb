@@ -8,7 +8,6 @@ import { io } from "socket.io-client";
 import { useAuth } from "../AuthProvider";
 import { useUser } from "../UserProvider";
 import { useNavigate } from "react-router-dom";
-import PopUpChat from "./PopUpChat";
 function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -19,7 +18,6 @@ function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
   const [messageInput, setMessageInput] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { token } = useAuth();
   console.log(token);
   const { user } = useUser();
@@ -28,14 +26,6 @@ function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
   const page = useRef(1);
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
-  const handleViewProfile = (userId) => {
-    navigate("/profile/" + userId);
-    setIsPopupOpen(false); // Đóng popup sau khi xem trang cá nhân
-  };
-  const openMessenger = () => {
-    navigate("/messages" );
-    setIsPopupOpen(false); // Đóng popup sau khi xem trang cá nhân
-  };
   const fetchData = () => {
     page.current = ++page.current;
     console.log("page", page.current);
@@ -218,7 +208,7 @@ function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
           <div className="chatbox-header">
             <div
               className="user-info"
-              onClick={() => setIsPopupOpen((prev) => !prev)}
+              onClick={() => navigate("/profile/" + recipientInfo.user_id)}
             >
               <img
                 crossOrigin="anonymous"
@@ -230,7 +220,6 @@ function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
               />
               <p>
                 {recipientInfo.first_name} {recipientInfo.last_name}
-                <i class="fa-solid fa-chevron-down"></i>
               </p>
             </div>
             <div className="icons">
@@ -252,13 +241,6 @@ function ChatBox({ recipient_id, chatBoxes, setChatBoxes, index }) {
                 <img src="/close-solid.png" alt="Close Icon" />
               </button>
             </div>
-            {isPopupOpen && (
-              <PopUpChat
-                onViewProfile={handleViewProfile}
-                recipientId={recipientInfo.user_id}
-                openMessenger={openMessenger}
-              />
-      )}
           </div>
           {!isMinimized && (
             <>

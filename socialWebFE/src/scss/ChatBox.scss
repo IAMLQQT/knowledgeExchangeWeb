@@ -31,9 +31,8 @@
       display: flex;
       gap: 1rem;
       align-items: center;
-      transition: 0.3s;
+
       max-width: 80%;
-      padding: 0.5rem 1rem;
       img {
         cursor: pointer;
         width: 3.5rem;
@@ -42,17 +41,8 @@
       p {
         max-width: 80%;
         overflow-y: hidden;
-        cursor: pointer; 
-        i {
-          font-size: 10px;
-          margin-left: 10px;
-        }
+        cursor: pointer;
       }
-      &:hover{ 
-        background-color: #d4d4d4;
-          border-radius: 10px;
-        
-       }
     }
 
     .icons {
