@@ -1,22 +1,22 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/LoginUI/Login";
-import ForgetPassword from "./pages/LoginUI/ForgetPassword";
-import ResetPassword from "./pages/LoginUI/ResetPassword";
-import HomePage from "./pages/HomePage";
+import Login from "./components/Login/LoginUI/Login";
+import ForgetPassword from "./components/Login/Password/ForgetPassword";
+import ResetPassword from "./components/Login/Password/ResetPassword";
+import HomePage from "./components/Body/HomePage/HomePage";
 import "./reset.css";
-import PostDetail from "./pages/PostDetail";
-import Profile from "./pages/Profile";
-import ProfileDetail from "./pages/ProfileDetail";
-import Message from "./pages/Message";
-import SetInitialPassword from "./pages/LoginUI/SetInitialPassword";
+import PostDetail from "./components/Body/Post/PostDetail";
+import Profile from "./components/Body/Profile/Profile";
+import ProfileDetail from "./components/Body/Profile/ProfileDetail";
+import Message from "./components/Body/Message/Message";
+import SetInitialPassword from "./components/Login/Password/SetInitialPassword";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./AuthProvider";
-import ChangePassword from "./pages/ChangePassword";
+import ChangePassword from "./components/Login/Password/ChangePassword";
 import { UserProvider } from "./UserProvider";
-import SavedPost from "./pages/SavedPost";
-import Users from "./pages/Users";
-import SearchResult from "./pages/SearchResult"
+import SavedPost from "./components/Body/Post/SavedPost";
+import Users from "./components/Body/Search/Users";
+import SearchResult from "./components/Body/Search/SearchResult"
 function App() {
   return (
     <BrowserRouter>
