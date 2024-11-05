@@ -1,4 +1,5 @@
 .post {
+  width: 90%;
   margin-top: 2rem;
   padding: 2rem;
   border-radius: 2rem;
@@ -67,5 +68,27 @@
         }
       }
     }
+  }
+}
+.div {
+  .delete {
+    
+      cursor: pointer;
+      i {
+        padding: 10px;
+        color: #eb503c;
+        margin-left: 20px; 
+        margin-top: 20px; 
+        font-size: 1.2em;
+        transition: 0.3s;
+        box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 14px;
+        border-radius: 50%;
+        &:hover {
+          background-color: cyan;
+  
+          color: #eb503c;
+        }
+      }
+    
   }
 }

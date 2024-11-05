@@ -32,8 +32,13 @@ button {
   }
 }
 .container {
-  max-width: 1440px;
+  width: 1440px;
   margin: auto;
+}
+.admincontainer {
+  width: 1610px;
+  margin: auto;
+  position: relative;
 }
 .content {
   align-items: start;
@@ -45,7 +50,9 @@ button {
 .newsfeed {
   width: 70%;
 }
-
+.usermanagament {
+  width:100%;
+}
 @media (max-width: 820px) {
   .App {
     display: unset;

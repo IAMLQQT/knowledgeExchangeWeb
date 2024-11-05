@@ -11,6 +11,7 @@ import { useUser } from "../../../UserProvider.jsx";
 import Comment from "./Comment.jsx";
 import EditPostModal from "../Modals/EditPostModal.jsx";
 import { confirmAlert } from "react-confirm-alert";
+import { Outlet, useMatch } from "react-router-dom";
 export default function PostDetail() {
   const modalRef = useRef();
   const [refresher, setRefresher] = useState(false);
@@ -30,6 +31,7 @@ export default function PostDetail() {
   const likeListRef = useRef();
   const modifyRef = useRef();
   const navigate = useNavigate();
+  const homeMatch = useMatch("/admin/*");
   const handelSavePostButton = () => {
     console.log(postDetail);
     if (!postDetail.isSaved) {
@@ -241,10 +243,10 @@ export default function PostDetail() {
   };
 
   useEffect(() => {
-    const apiEndpoint = token 
-      ? `${SERVER_DOMAIN}/postdetail/${postId}` 
+    const apiEndpoint = token
+      ? `${SERVER_DOMAIN}/postdetail/${postId}`
       : `${SERVER_DOMAIN}/postdetailwithouttoken/${postId}`;
-  
+
     axios
       .get(apiEndpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -263,7 +265,7 @@ export default function PostDetail() {
         console.log(err);
       });
   }, [postId, refresher]);
-  
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -291,52 +293,61 @@ export default function PostDetail() {
     <div className="post-detail">
       <div className="post-detail-header flex a-center j-between">
         <h1>{postDetail?.title}</h1>
-        {token &&
-          <div className="post-detail-header-btn">
-          <button className="post-save" onClick={handelSavePostButton}>
-            <i
-              className={`${postDetail?.isSaved ? "fa-solid" : "fa-regular"
-                } fa-bookmark`}
-            ></i>
-          </button>
-          <button className="post-like" onClick={handleLikeButton}>
-            <i
-              className={`${postDetail?.isLiked ? "fa-solid" : "fa-regular"
-                } fa-heart`}
-            ></i>
-          </button>
-          <button
-            className="post-edit"
-            onClick={() => setModifyOpen((prev) => !prev)}
-          >
-            <i className="fa-solid fa-ellipsis"></i>
-            {isModifyOpen && (
-              <ul className="modify-dropdown" ref={modifyRef}>
-                {postDetail.user_id === user?.user.user_id ? (
-                  <>
-                    <li>
-                      <button type="button" onClick={handleEditButton}>
-                        Edit
-                      </button>
-                    </li>
-                    <li>
-                      <button type="button" onClick={handleDeletePost}>
-                        Delete
-                      </button>
-                    </li>
-                  </>
-                ) : ( <li>
-                  <button type="button" onClick={handleReportPost}>
-                    Report
-                  </button>
-                </li>)}
-               
-              </ul>
-            )}
-          </button>
-        </div>
-        }
-        
+        {homeMatch ? (
+          <>
+            <Outlet />
+          </>
+        ) : (
+          <div>
+            {token &&
+              <div className="post-detail-header-btn">
+                <button className="post-save" onClick={handelSavePostButton}>
+                  <i
+                    className={`${postDetail?.isSaved ? "fa-solid" : "fa-regular"
+                      } fa-bookmark`}
+                  ></i>
+                </button>
+                <button className="post-like" onClick={handleLikeButton}>
+                  <i
+                    className={`${postDetail?.isLiked ? "fa-solid" : "fa-regular"
+                      } fa-heart`}
+                  ></i>
+                </button>
+                <button
+                  className="post-edit"
+                  onClick={() => setModifyOpen((prev) => !prev)}
+                >
+                  <i className="fa-solid fa-ellipsis"></i>
+                  {isModifyOpen && (
+                    <ul className="modify-dropdown" ref={modifyRef}>
+                      {postDetail.user_id === user?.user.user_id ? (
+                        <>
+                          <li>
+                            <button type="button" onClick={handleEditButton}>
+                              Edit
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" onClick={handleDeletePost}>
+                              Delete
+                            </button>
+                          </li>
+                        </>
+                      ) : (<li>
+                        <button type="button" onClick={handleReportPost}>
+                          Report
+                        </button>
+                      </li>)}
+
+                    </ul>
+                  )}
+                </button>
+              </div>
+            }
+          </div>
+        )}
+
+
       </div>
       <div className="post-detail-content">
         <p className="post-content">{postDetail?.content}</p>
@@ -385,29 +396,38 @@ export default function PostDetail() {
           </p>
         </div>
       </div>
-      {token && <div className="post-detail-create-comment flex a-center ">
-          <img
-            crossOrigin="anonymous"
-            src={user?.user?.profile_picture || "/user.png"}
-            alt="user-ava"
-          />
-          <textarea
-            type="text"
-            placeholder="Write something..."
-            value={userComment}
-            onChange={handleUserComment}
-          ></textarea>
 
-          <img
-            src="/comment-icon.png"
-            alt="comment icon"
-            className="comment-icon"
-            onClick={handleSubmitComment}
-          />
+
+      {homeMatch ? (
+        <>
+          <Outlet />
+        </>
+      ) : (
+        <div>
+          {token && <div className="post-detail-create-comment flex a-center ">
+            <img
+              crossOrigin="anonymous"
+              src={user?.user?.profile_picture || "/user.png"}
+              alt="user-ava"
+            />
+            <textarea
+              type="text"
+              placeholder="Write something..."
+              value={userComment}
+              onChange={handleUserComment}
+            ></textarea>
+
+            <img
+              src="/comment-icon.png"
+              alt="comment icon"
+              className="comment-icon"
+              onClick={handleSubmitComment}
+            />
+          </div>
+          }
         </div>
-       }
-        
 
+      )}
       <div className="post-detail-comment">
         {postDetail?.comments.map((comment) => (
           <Comment

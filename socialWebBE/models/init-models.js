@@ -6,6 +6,7 @@ var _friendrequest = require("./friendrequest");
 var _friendship = require("./friendship");
 var _likes = require("./likes");
 var _posts = require("./posts");
+var _report_post = require("./report_post");
 var _role = require("./role");
 var _tags = require("./tags");
 var _tags_posts = require("./tags_posts");
@@ -19,6 +20,7 @@ function initModels(sequelize) {
   var friendship = _friendship(sequelize, DataTypes);
   var likes = _likes(sequelize, DataTypes);
   var posts = _posts(sequelize, DataTypes);
+  var report_post = _report_post(sequelize, DataTypes);
   var role = _role(sequelize, DataTypes);
   var tags = _tags(sequelize, DataTypes);
   var tags_posts = _tags_posts(sequelize, DataTypes);
@@ -28,10 +30,12 @@ function initModels(sequelize) {
   posts.belongsToMany(user, { as: 'user_id_users', through: bookmark, foreignKey: "post_id", otherKey: "user_id" });
   posts.belongsToMany(user, { as: 'user_id_user_comments', through: comments, foreignKey: "post_id", otherKey: "user_id" });
   posts.belongsToMany(user, { as: 'user_id_user_likes', through: likes, foreignKey: "post_id", otherKey: "user_id" });
+  posts.belongsToMany(user, { as: 'user_id_user_report_posts', through: report_post, foreignKey: "post_id", otherKey: "user_id" });
   tags.belongsToMany(posts, { as: 'post_id_posts_tags_posts', through: tags_posts, foreignKey: "tag_id", otherKey: "post_id" });
   user.belongsToMany(posts, { as: 'post_id_posts', through: bookmark, foreignKey: "user_id", otherKey: "post_id" });
   user.belongsToMany(posts, { as: 'post_id_posts_comments', through: comments, foreignKey: "user_id", otherKey: "post_id" });
   user.belongsToMany(posts, { as: 'post_id_posts_likes', through: likes, foreignKey: "user_id", otherKey: "post_id" });
+  user.belongsToMany(posts, { as: 'post_id_posts_report_posts', through: report_post, foreignKey: "user_id", otherKey: "post_id" });
   user.belongsToMany(user, { as: 'user_receive_id_users', through: friendrequest, foreignKey: "user_sent_id", otherKey: "user_receive_id" });
   user.belongsToMany(user, { as: 'user_sent_id_users', through: friendrequest, foreignKey: "user_receive_id", otherKey: "user_sent_id" });
   user.belongsToMany(user, { as: 'user_friend_id_users', through: friendship, foreignKey: "user_id", otherKey: "user_friend_id" });
@@ -44,6 +48,8 @@ function initModels(sequelize) {
   posts.hasMany(comments, { as: "comments", foreignKey: "post_id"});
   likes.belongsTo(posts, { as: "post", foreignKey: "post_id"});
   posts.hasMany(likes, { as: "likes", foreignKey: "post_id"});
+  report_post.belongsTo(posts, { as: "post", foreignKey: "post_id"});
+  posts.hasMany(report_post, { as: "report_posts", foreignKey: "post_id"});
   tags_posts.belongsTo(posts, { as: "post", foreignKey: "post_id"});
   posts.hasMany(tags_posts, { as: "tags_posts", foreignKey: "post_id"});
   account.belongsTo(role, { as: "Role", foreignKey: "RoleID"});
@@ -66,6 +72,8 @@ function initModels(sequelize) {
   user.hasMany(likes, { as: "likes", foreignKey: "user_id"});
   posts.belongsTo(user, { as: "user", foreignKey: "user_id"});
   user.hasMany(posts, { as: "posts", foreignKey: "user_id"});
+  report_post.belongsTo(user, { as: "user", foreignKey: "user_id"});
+  user.hasMany(report_post, { as: "report_posts", foreignKey: "user_id"});
 
   return {
     account,
@@ -75,6 +83,7 @@ function initModels(sequelize) {
     friendship,
     likes,
     posts,
+    report_post,
     role,
     tags,
     tags_posts,

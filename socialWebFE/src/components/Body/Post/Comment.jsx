@@ -7,7 +7,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import ShowMoreText from "react-show-more-text";
 import { Navigate, useNavigate } from "react-router-dom";
-
+import { Outlet, useMatch } from "react-router-dom";
 function Comment({
   comment,
   userId,
@@ -24,6 +24,7 @@ function Comment({
   const [editedComment, setEditedComment] = useState(comment.content);
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
+  const homeMatch = useMatch("/admin/*");
   console.log(comment.created_at);
   
   const handleEditComment = () => {
@@ -168,13 +169,20 @@ function Comment({
           </>
         )}
       </div>
-      <button
-        type="button"
-        className="modify-button"
-        onClick={() => setIsDropdown(true)}
-      >
-        <i className="fa-solid fa-ellipsis"></i>
-      </button>
+      
+      {homeMatch ? (
+            <>
+              <Outlet />
+            </>
+          ) : (
+            <button
+            type="button"
+            className="modify-button"
+            onClick={() => setIsDropdown(true)}
+          >
+            <i className="fa-solid fa-ellipsis"></i>
+          </button>
+          )}
       {isDropdown && (
         <ul className="modify-dropdown" ref={modalRef}>
           {userId === comment?.user?.user_id && (

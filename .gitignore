@@ -2,4 +2,6 @@ socialWebBE/node_modules/
 socialWebBE/uploads/
 socialWebBE/backup/
 socialWebBE/utils/serviceAccountKey.json
+socialWebBE/config.env
 
+socialWebFE/node_modules/

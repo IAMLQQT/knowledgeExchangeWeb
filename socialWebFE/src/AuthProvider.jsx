@@ -33,18 +33,27 @@ function AuthProvider({ children }) {
         console.log(res);
         toast.success("Login successfully!", {
           position: toast.POSITION.BOTTOM_LEFT,
-          autoClose: 5000,
+          autoClose: 1000,
         });
         //Cookies.set("token", res.data.token, { expires: 3 });
         localStorage.setItem("token", res.data.token);
         setToken(res.data.token);
-        const nextLocation = location.state?.from.pathName || "/";
-        navigate(nextLocation);
+        if (res.data.passwordVersion === 0) {
+          toast.error("You must change password for the frist login!", {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 5000,
+          });
+          navigate("/changepassword"); // Adjust route as needed
+          localStorage.removeItem("token");
+        } else {
+          const nextLocation = location.state?.from.pathName || "/";
+          navigate(nextLocation);
+        }
       })
       .catch((error) => {
         console.log(error);
         if (error.response.status === 401) {
-          toast.error("Wrong email or password!", {
+          toast.error(`${error.response.data.message}`, {
             position: toast.POSITION.TOP_CENTER,
             autoClose: 5000,
           });
@@ -52,7 +61,48 @@ function AuthProvider({ children }) {
         }
         toast.error(
           error.response?.data.message +
-            "\nSomething went wrong! Please try again!",
+          "\nSomething went wrong! Please try again!",
+          {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 5000,
+          }
+        );
+      });
+  };
+  const handleAdminLogin = (email, password) => {
+    toast.info("Logging in...", {
+      position: toast.POSITION.TOP_CENTER,
+      autoClose: 2000,
+    });
+    axios
+      .post(`${SERVER_DOMAIN}/admin/login`, {
+        email,
+        password,
+      })
+      .then((res) => {
+        console.log(res);
+        toast.success("Login successfully!", {
+          position: toast.POSITION.BOTTOM_LEFT,
+          autoClose: 1000,
+        });
+        //Cookies.set("token", res.data.token, { expires: 3 });
+        localStorage.setItem("token", res.data.token);
+        setToken(res.data.token);
+        const nextLocation = location.state?.from.pathname || "/admin";
+        navigate(nextLocation);
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.response.status === 401) {
+          toast.error(`${error.response.data.message}`, {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 5000,
+          });
+          return;
+        }
+        toast.error(
+          error.response?.data.message +
+          "\nSomething went wrong! Please try again!",
           {
             position: toast.POSITION.TOP_CENTER,
             autoClose: 5000,
@@ -64,8 +114,14 @@ function AuthProvider({ children }) {
     setToken(null);
     navigate("/login");
     localStorage.removeItem("token");
+    
   };
-  const value = { handleLogin, handleLogout, token, setToken };
+  const handleAdminLogout = () => {
+    setToken(null);
+    navigate("/admin/login");
+    localStorage.removeItem("token");
+  };
+  const value = { handleLogin, handleAdminLogin, handleLogout, handleAdminLogout, token, setToken };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

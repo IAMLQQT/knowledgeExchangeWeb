@@ -13,15 +13,16 @@ module.exports = function(sequelize, DataTypes) {
     },
     password: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     passwordChangeAt: {
       type: DataTypes.BIGINT,
       allowNull: true
     },
     account_status: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
+      type: DataTypes.ENUM('INACTIVE','ACTIVE','SUSPENDED','DELETED','LOCKED'),
+      allowNull: false,
+      defaultValue: "INACTIVE"
     },
     RoleID: {
       type: DataTypes.STRING(10),
@@ -42,8 +43,20 @@ module.exports = function(sequelize, DataTypes) {
     },
     passwordVersion: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       defaultValue: 0
+    },
+    verificationToken: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    verificationExpires: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    suspendedUntil: {
+      type: DataTypes.BIGINT,
+      allowNull: true
     }
   }, {
     sequelize,
