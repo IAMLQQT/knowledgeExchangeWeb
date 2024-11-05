@@ -33,13 +33,22 @@ function AuthProvider({ children }) {
         console.log(res);
         toast.success("Login successfully!", {
           position: toast.POSITION.BOTTOM_LEFT,
-          autoClose: 5000,
+          autoClose: 1000,
         });
         //Cookies.set("token", res.data.token, { expires: 3 });
         localStorage.setItem("token", res.data.token);
         setToken(res.data.token);
-        const nextLocation = location.state?.from.pathName || "/";
-        navigate(nextLocation);
+        if (res.data.passwordVersion === 0) {
+          toast.error("You must change password for the frist login!", {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 5000,
+          });
+          navigate("/changepassword"); // Adjust route as needed
+          localStorage.removeItem("token");
+        } else {
+          const nextLocation = location.state?.from.pathName || "/";
+          navigate(nextLocation);
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -52,7 +61,7 @@ function AuthProvider({ children }) {
         }
         toast.error(
           error.response?.data.message +
-            "\nSomething went wrong! Please try again!",
+          "\nSomething went wrong! Please try again!",
           {
             position: toast.POSITION.TOP_CENTER,
             autoClose: 5000,

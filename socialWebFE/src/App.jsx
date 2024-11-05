@@ -17,6 +17,7 @@ import { UserProvider } from "./UserProvider";
 import SavedPost from "./components/Body/Post/SavedPost";
 import Users from "./components/Body/Search/Users";
 import SearchResult from "./components/Body/Search/SearchResult"
+import VerificationPage from "./components/Login/Verification/VerificationPage";
 function App() {
   return (
     <BrowserRouter>
@@ -37,6 +38,7 @@ function App() {
             <Route path="/resetpassword/:token" element={<ResetPassword />} />
             <Route path="/setpassword" element={<SetInitialPassword />} />
             <Route path="/changepassword" element={<ChangePassword />} />
+            <Route path="/verifyaccount/:token" element={<VerificationPage />} />
             {/* <Route path="/post/:id" element={<PostDetail />} /> */}
             <Route path="*" element={<h1> Page not found, 404! </h1>} />
           </Routes>
