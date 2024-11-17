@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const { Op, Sequelize } = require('sequelize');
+const { Op, Sequelize, where } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
 const { sequelize, posts, friendship, tags, tags_posts, bookmark } = require('../models/models');
 const AppError = require('../utils/appError');
@@ -16,28 +16,45 @@ exports.getPosts = catchAsync(async (req, res, next) => {
   const sorted = req.query.sorted;
   let whereConditions = {};
 
-  if (sorted === 'community') {
-    // Get following users' IDs
-    const friendships = await friendship.findAll({
-      where: { user_id: userId },
-      attributes: ['user_friend_id'],
-    });
-    const friendshipsID = friendships.map((f) => f.user_friend_id);
-    console.log(friendshipsID);
+  // if (sorted === 'community') {
+  //   // Get following users' IDs
+  //   const friendships = await friendship.findAll({
+  //     where: { user_id: userId },
+  //     attributes: ['user_friend_id'],
+  //   });
+  //   const friendshipsID = friendships.map((f) => f.user_friend_id);
+  //   console.log(friendshipsID);
 
-    // Create OR conditions for community sorting
-    whereConditions = {
-      user_id: { [Op.in]: friendshipsID },
-    };
-  } else if (userId) {
-    whereConditions.user_id = userId;
-  }
+  //   // Create OR conditions for community sorting
+  //   whereConditions = {
+  //     user_id: { [Op.in]: friendshipsID },
+  //   };
+  // } else if (userId) {
+  //   whereConditions.user_id = userId;
+  // }
 
   const newsfeed = await posts.findAll({
     offset,
     limit,
     include: [
-      { model: comments, as: 'comments'},
+      {
+        model: posts,
+        as: 'commentPost',
+        required: false, // Để tránh lỗi nếu không có comment
+        attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
+        include: [
+          {
+            model: user,
+            as: 'user',
+            attributes: [
+              'user_id',
+              'first_name',
+              'last_name',
+              'profile_picture',
+            ],
+          },
+        ],
+      },
       { model: likes, as: 'likes' },
       {
         model: user,
@@ -51,6 +68,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
         attributes: ['tag_name'],
       },
     ],
+    where: { original_post_id: null },
     attributes: ['title', 'created_at', 'post_id'],
     order: [['created_at', 'DESC']],
   });
@@ -60,7 +78,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
   }
  
   const postsWithCounts = newsfeed.map((post) => {
-    const commentCount = post.comments.length;
+    const commentCount = post.commentPost.length;
     const likeCount = post.likes.length;
     const tagsString = post.tag_id_tags.map(tag => tag.tag_name).join(', ');
     return {
@@ -134,8 +152,11 @@ exports.getPostDetail = catchAsync(async (req, res, next) => {
     where: { post_id: postId },
     include: [
       {
-        model: comments,
-        as: 'comments',
+        model: posts,
+        as: 'commentPost',
+        where: { original_post_id: postId }, // Lọc các bài viết có original_post_id trùng với post_id
+        required: false, // Để tránh lỗi nếu không có comment
+        attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
         include: [
           {
             model: user,

@@ -338,7 +338,6 @@ export default function PostDetail() {
                           Report
                         </button>
                       </li>)}
-
                     </ul>
                   )}
                 </button>
@@ -429,7 +428,7 @@ export default function PostDetail() {
 
       )}
       <div className="post-detail-comment">
-        {postDetail?.comments.map((comment) => (
+        {postDetail?.commentPost.map((comment) => (
           <Comment
             comment={comment}
             key={comment.comment_id}

@@ -3,15 +3,17 @@ const catchAsync = require('../utils/catchAsync');
 const { posts, bookmark,  user, comments, likes} = require('../models/models');
 const AppError = require('../utils/appError');
 const moment = require('moment');
+const { nanoid } = require('nanoid');
 
 exports.addComment = catchAsync(async (req, res, next) => {
     const { user_id } = req.user;
     const { post_id, content, created_at } = req.body;
-    const comment = await comments.create({
+    const comment = await posts.create({
+      post_id: nanoid(25),
       user_id,
-      post_id,
       content,
       created_at,
+      original_post_id: post_id
     });
     if (!comment) {
       return next(new AppError('Error while adding comment!', 500));

@@ -25,8 +25,8 @@ function Comment({
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
   const homeMatch = useMatch("/admin/*");
-  console.log(comment.created_at);
-  
+  console.log(comment.user.profile_picture);
+
   const handleEditComment = () => {
     setCurComment(editedComment);
     setIsEditing(false);
@@ -169,20 +169,20 @@ function Comment({
           </>
         )}
       </div>
-      
+
       {homeMatch ? (
-            <>
-              <Outlet />
-            </>
-          ) : (
-            <button
-            type="button"
-            className="modify-button"
-            onClick={() => setIsDropdown(true)}
-          >
-            <i className="fa-solid fa-ellipsis"></i>
-          </button>
-          )}
+        <>
+          <Outlet />
+        </>
+      ) : (
+        <button
+          type="button"
+          className="modify-button"
+          onClick={() => setIsDropdown(true)}
+        >
+          <i className="fa-solid fa-ellipsis"></i>
+        </button>
+      )}
       {isDropdown && (
         <ul className="modify-dropdown" ref={modalRef}>
           {userId === comment?.user?.user_id && (

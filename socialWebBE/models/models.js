@@ -18,7 +18,7 @@ const sequelize = new Sequelize(databaseName, "root", password, {
     },
 });
 //Define model
-const { user, account, role, friendship, friendrequest, bookmark, comments, likes, posts, tags, tags_posts } = initModel(sequelize);
+const { user, account, role, friendship, friendrequest, bookmark, comments, likes, posts, tags, tags_posts, report_post } = initModel(sequelize);
 sequelize.addHook('beforeCount', function (options) {
     if (this._scope.include && this._scope.include.length > 0) {
         options.distinct = true;
@@ -84,4 +84,5 @@ module.exports = {
     posts, 
     tags, 
     tags_posts,
+    report_post
 };
