@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import ShowMoreText from "react-show-more-text";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Outlet, useMatch } from "react-router-dom";
+import { useUser } from "../../../UserProvider";
 function Comment({
   comment,
   userId,
@@ -19,12 +20,14 @@ function Comment({
   const modalRef = useRef();
   const [isDropdown, setIsDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isRely, setIsRely] = useState(false);
   const [curComment, setCurComment] = useState(comment.content);
   const [editTime, setEditTime] = useState(comment.updated_at);
   const [editedComment, setEditedComment] = useState(comment.content);
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
   const homeMatch = useMatch("/admin/*");
+  const { user } = useUser();
   const handleEditComment = () => {
     setCurComment(editedComment);
     setIsEditing(false);
@@ -52,6 +55,9 @@ function Comment({
         });
       });
   };
+  const handelRelyButton = () => {
+    setIsRely(true);
+  }
   const handleEditButton = () => {
     setIsDropdown(false);
     setIsEditing(true);
@@ -105,12 +111,14 @@ function Comment({
     const handleEscapeEvent = (e) => {
       if (e.key === "Escape") {
         setIsEditing(false);
+        setIsRely(false);
       }
     };
 
     if (isEditing) window.addEventListener("keydown", handleEscapeEvent);
+    if (isRely) window.addEventListener("keydown", handleEscapeEvent);
     return () => window.removeEventListener("keydown", handleEscapeEvent);
-  }, [isEditing]);
+  }, [isEditing, isRely]);
   return (
     <div className="comment-detail flex" key={comment.comment_id}>
       <img
@@ -122,6 +130,7 @@ function Comment({
         <h3 onClick={() => navigate("/profile/" + comment.user.user_id)}>
           {comment.user.first_name} {comment.user.last_name}
         </h3>
+
         {isEditing && (
           <>
             <div className="edit-comment">
@@ -165,6 +174,39 @@ function Comment({
                   : "Date not available"}
             </p>
           </>
+        )}
+
+        {isRely ? (
+          <>
+            <div className="rely-comment">
+              <img
+                crossOrigin="anonymous"
+                src={user?.user?.profile_picture || "/user.png"}
+                alt="user-ava"
+              />
+              <div className="warrper-rely  ">
+                <h3>{user?.user?.first_name} {user?.user?.last_name}</h3>
+                <textarea
+                  type="text"
+                  placeholder="Write something..."
+                  value={""}
+                // onChange={""}
+                ></textarea>
+                <img
+                  src="/comment-icon.png"
+                  alt="comment icon"
+                  className="comment-icon"
+                // onClick={handleSubmitComment}
+                />
+              </div>
+
+            </div>
+            <p className="cancle-noti">
+              Press Esc to <u onClick={() => setIsRely(false)}>cancle</u>.
+            </p>
+          </>
+        ) : (
+          <button className="rely-button" onClick={handelRelyButton}>Rely</button>
         )}
       </div>
 

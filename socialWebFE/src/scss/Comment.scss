@@ -22,4 +22,50 @@
       }
     }
   }
+  .comment-icon {
+    width: 2rem;
+    cursor: pointer;
+  }
+  .rely-comment {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    .warrper-rely  {
+      width: 100%;
+      textarea {
+        width: 82%;
+        min-height: 8rem;
+        max-height: 20rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px solid #00000029;
+        font-size: inherit;
+        font-family: sans-serif;
+        resize: none;
+        &::placeholder {
+          font-size: 0.9em;
+        }
+        &:focus {
+          border: 1px solid #4361ee;
+        }
+      }
+      .comment-icon {
+        margin-left: 10px;
+        width: 1.5em ;
+        cursor: pointer;
+      }
+    }
+    
+    
+  }
+}
+.rely-button {
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: 700;
+  margin-top: 10px;
+  &:hover {
+    text-decoration: underline;
+  }
 }
