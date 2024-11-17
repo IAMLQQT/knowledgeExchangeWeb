@@ -96,7 +96,7 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
       message: 'Only accounts with ACTIVE status can update roles.',
     });
   }
-
+  
   // Cập nhật RoleID của tài khoản
   await account.update(
     { RoleID: newRoleID },

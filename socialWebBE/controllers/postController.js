@@ -68,7 +68,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
         attributes: ['tag_name'],
       },
     ],
-    where: { original_post_id: null },
+    where: { original_post_id: null,  post_status: '0'},
     attributes: ['title', 'created_at', 'post_id'],
     order: [['created_at', 'DESC']],
   });
@@ -532,4 +532,34 @@ exports.deletePost = catchAsync(async (req, res, next) => {
       }),
     )
   res.status(204).json({ status: 'success' });
+});
+
+exports.hidePost = catchAsync(async (req, res, next) => {
+  const { post_id } = req.body;
+
+ 
+  const post = await posts.findOne({
+    where: { post_id: post_id, original_post_id: null },
+    attributes: ['post_status'],
+  });
+
+  if (!post) {
+    return next(new AppError('Post not found!', 404));
+  }
+
+  
+  if (post.post_status == '1') {
+    return next(new AppError('Post is already hidden!', 400));
+  }
+
+  
+  await posts.update(
+    { post_status: 1 },
+    { where: { post_id: post_id, original_post_id: null} }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Post has been hidden successfully!',
+  });
 });

@@ -18,6 +18,13 @@ router.get(
 router.post('/createPost', authController.protect, postController.createPost);
 router.put("/updatePost/:postId",authController.protect,postController.updatePost)
 router.delete('/deletePost', authController.protect, postController.deletePost);
+
+router.patch(
+  '/hidePost',
+  authController.protect,
+  postController.hidePost,
+);
+
 router.get('/search', postController.searchPost);
 router.post('/addComment', authController.protect, commentsController.addComment);
 router.patch(

@@ -45,9 +45,8 @@ const PostManagement = () => {
                 console.log("data", res.data.data);
                 setIsLoading(false);
                 setPosts(res.data.data);
-
             });
-    }, []);
+    }, [refresher]);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
