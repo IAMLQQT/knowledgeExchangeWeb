@@ -229,7 +229,6 @@ export default function PostDetail() {
         }
       )
       .then(() => {
-        console.log(moment().unix());
         setUserComment("");
         setRefresher(!refresher);
       })
@@ -254,7 +253,7 @@ export default function PostDetail() {
       .then((res) => {
         setPostDetail(res.data.data);
         setIsLoading(false);
-        console.log("postdetail", res.data.data);
+        console.log("postdetail", res.data.data.commentPost);
       })
       .catch((err) => {
         setIsNotFound(true);

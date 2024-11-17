@@ -25,8 +25,6 @@ function Comment({
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
   const homeMatch = useMatch("/admin/*");
-  console.log(comment.user.profile_picture);
-
   const handleEditComment = () => {
     setCurComment(editedComment);
     setIsEditing(false);
@@ -36,7 +34,7 @@ function Comment({
       .patch(
         `${SERVER_DOMAIN}/editComment`,
         {
-          comment_id: comment.comment_id,
+          post_id: comment.post_id,
           content: editedComment,
           updated_at: editTimeUnix,
         },
@@ -59,14 +57,14 @@ function Comment({
     setIsEditing(true);
   };
   const handleDeleteComment = () => {
-    const newComments = postDetail.comments.filter(
-      (cmt) => cmt.comment_id != comment.comment_id
+    const newComments = postDetail.commentPost.filter(
+      (cmt) => cmt.post_id != comment.post_id
     );
-    setPostDetail({ ...postDetail, comments: newComments });
+    setPostDetail({ ...postDetail, commentPost: newComments });
     axios
       .delete(`${SERVER_DOMAIN}/deleteComment`, {
         data: {
-          comment_id: comment.comment_id,
+          post_id: comment.post_id,
         },
         headers: {
           Authorization: `Bearer ${token}`,
