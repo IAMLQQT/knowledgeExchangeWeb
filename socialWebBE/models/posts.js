@@ -14,14 +14,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    code: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    post_status: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true
-    },
     created_at: {
       type: DataTypes.BIGINT,
       allowNull: true,
@@ -29,6 +21,14 @@ module.exports = function(sequelize, DataTypes) {
     updated_at: {
       type: DataTypes.BIGINT,
       allowNull: true,
+    },
+    code: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    post_status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     },
     user_id: {
       type: DataTypes.STRING(15),
@@ -38,6 +38,10 @@ module.exports = function(sequelize, DataTypes) {
         model: 'user',
         key: 'user_id'
       }
+    },
+    original_post_id: {
+      type: DataTypes.STRING(25),
+      allowNull: true
     }
   }, {
     sequelize,

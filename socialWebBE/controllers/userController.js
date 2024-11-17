@@ -7,14 +7,7 @@ const fs = require('fs');
 const { Op, Sequelize, where } = require('sequelize');
 const { sequelize } = require('../models/models');
 const { UserInfo } = require('firebase-admin/auth');
-exports.getAllAccounts = catchAsync(async (req, res, next) => {
-  const allAccounts = await account.findAll({});
-  res.status(200).json({ allAccounts });
-});
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const allUsers = await user.findAll({});
-  res.status(200).json({ allUsers });
-});
+
 exports.getProfile = catchAsync(async (req, res, next) => {
   const AccountID = req.account.accountID;
   const userinfo = await user.findOne({

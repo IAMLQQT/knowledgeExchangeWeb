@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 //TODO: require Routers
 const userRouter = require('./routes/userRoutes');
 const postRouter = require('./routes/postRoutes');
+const adminRouter = require('./routes/adminRoutes')
 const errorController = require('./controllers/errorController');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 });
 app.use('/user', userRouter);
 app.use('/', postRouter);
+app.use('/admin', adminRouter)
 app.use(
   '/uploads/profile_pictures',
   express.static('uploads/profile_pictures'),

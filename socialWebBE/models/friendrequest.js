@@ -2,10 +2,10 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('friendrequest', {
     request_id: {
+      autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
     user_sent_id: {
       type: DataTypes.STRING(15),
@@ -27,13 +27,8 @@ module.exports = function(sequelize, DataTypes) {
     },
     request_status: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: 0
-    },
-    created_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
+      allowNull: false
+    }
   }, {
     sequelize,
     tableName: 'friendrequest',

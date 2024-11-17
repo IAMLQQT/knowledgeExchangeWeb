@@ -3,13 +3,16 @@ const moment = require('moment');
 const multer = require('multer');
 const usersController = require('../controllers/userController');
 const authController = require('../controllers/authController');
-const friendshipController = require('../controllers/friendshipController')
+const friendshipController = require('../controllers/friendshipController');
+const adminController = require('../controllers/adminController');
 const router = express.Router();
 
 router.post('/login', authController.login);
 router.route('/googleSignIn').post(authController.googleSignIn);
+router.post('/verifyaccount/:token', authController.verifyAccount);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
+
 router.post(
   '/updatePassword',
   authController.protect,
@@ -20,20 +23,7 @@ router.patch(
   authController.protect,
   authController.deactivateUser,
 );
-router
-  .route('/getAllAccounts')
-  .get(
-    authController.protect,
-    authController.restrictTo(['0000000000']),
-    usersController.getAllAccounts,
-  );
-router
-  .route('/getAllUsers')
-  .get(
-    authController.protect,
-    authController.restrictTo(['0000000000']),
-    usersController.getAllUsers,
-  );
+
 router.get(
   '/getProfile/:id?',
   authController.protect,

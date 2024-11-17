@@ -15,10 +15,6 @@ module.exports = function(sequelize, DataTypes) {
         key: 'user_id'
       }
     },
-     created_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
     user_friend_id: {
       type: DataTypes.STRING(15),
       allowNull: false,

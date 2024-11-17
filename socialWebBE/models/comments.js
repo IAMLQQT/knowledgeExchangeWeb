@@ -11,14 +11,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    created_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
-    updated_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
     user_id: {
       type: DataTypes.STRING(15),
       allowNull: false,
