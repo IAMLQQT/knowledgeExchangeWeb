@@ -8,7 +8,7 @@ import axios from "axios";
 import { useAuth } from "../../../AuthProvider.jsx";
 import { toast } from "react-toastify";
 function Post({ post, setRefresher }) {
-  const { post_id, title, tagsString, user, created_at, likeCount, commentCount } =
+  const { post_id, title, tagsString, user, created_at, likeCount, commentCount, post_status } =
     post;
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const { token } = useAuth();
@@ -43,7 +43,51 @@ function Post({ post, setRefresher }) {
                   autoClose: 5000,
                 });
                 setRefresher((prev) => !prev);
-                navigate("/admin/postmanagement");
+                navigate("/admin/postmanagement?post_status=0&limit=5&page=1");
+              })
+              .catch((err) => {
+                console.error(err);
+                toast.error("Something went wrong! Please try again!", {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+              });
+          },
+        },
+        {
+          label: "No",
+          onClick: () => { },
+        },
+      ],
+    });
+  };
+  const handelAcctivePost = (post_id) => {
+    console.log(post_id);
+    
+    confirmAlert({
+      title: `Active Post "${title}"!`,
+      message: "Are you sure to active this post?",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => {
+            axios
+              .patch(
+                `${SERVER_DOMAIN}/activePost`,
+                { post_id }, // Đảm bảo gửi đúng dữ liệu
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+              .then(() => {
+                toast.success("Post Active successfully!", {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+                setRefresher((prev) => !prev);
+                navigate("/admin/postmanagement?post_status=1&limit=5&page=1");
               })
               .catch((err) => {
                 console.error(err);
@@ -99,7 +143,8 @@ function Post({ post, setRefresher }) {
         </div>
       </div>
       {homeMatch ? (
-        <>
+        <> 
+        {post_status === false && (
           <button
             class="delete"
             onClick={() => handelHidePost(post_id)}
@@ -107,6 +152,17 @@ function Post({ post, setRefresher }) {
           >
             <i class="fa-solid fa-xmark"></i>
           </button>
+        )}
+        {post_status === true && (
+          <button
+            class="delete"
+            onClick={() => handelAcctivePost(post_id)}
+   
+          >
+           <i class="fa-solid fa-check"></i>
+          </button>
+        )}
+          
         </>
       ) : (
         <Outlet />

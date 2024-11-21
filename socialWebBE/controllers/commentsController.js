@@ -60,3 +60,43 @@ exports.editComment = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ status: 'success' });
 });
+exports.getCommentReplies = catchAsync(async (req, res) => {
+  const { post_id } = req.body;
+
+  try {
+    const post = await posts.findOne({
+      where: { post_id: post_id },
+      attributes: ['original_post_id'],
+    });
+    
+  if (post && post.original_post_id === null) {
+    return next(new AppError('You are not allowed to add rely comment!', 403));
+  }
+    const relyComments = await posts.findAll({
+      where: { post_id, original_post_id: { [Op.ne]: null }}, 
+      attributes: [],
+      include: [
+        {
+          model: posts, 
+          as: "commentPost",
+          attributes: ["post_id", "content", "created_at", "user_id"], 
+          include: [
+            {
+              model: user, 
+              as: "user",
+              attributes: ["user_id", "first_name", "last_name", "profile_picture"], 
+            },
+          ],
+        },
+      ],
+    });
+    if (relyComments.length === 0) {
+      return next(new AppError('There is no Rely Comment!', 200));
+  }
+    
+    return res.status(200).json(relyComments);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});

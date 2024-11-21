@@ -563,3 +563,33 @@ exports.hidePost = catchAsync(async (req, res, next) => {
     message: 'Post has been hidden successfully!',
   });
 });
+exports.activePost = catchAsync(async (req, res, next) => {
+  const { post_id } = req.body;
+
+ 
+  const post = await posts.findOne({
+    where: { post_id: post_id, original_post_id: null },
+    attributes: ['post_status'],
+  });
+
+  if (!post) {
+    return next(new AppError('Post not found!', 404));
+  }
+
+  
+  if (post.post_status == '0') {
+    return next(new AppError('Post is already active!', 400));
+  }
+
+  
+  await posts.update(
+    { post_status: 0 },
+    { where: { post_id: post_id, original_post_id: null} }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Post has been hidden successfully!',
+  });
+});
+

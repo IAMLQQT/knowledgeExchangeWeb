@@ -11,6 +11,7 @@ const PostManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [refresher, setRefresher] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [activeTab, setActiveTab] = useState(0);
     const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
     const page = useRef(1);
     const { token } = useAuth();
@@ -18,7 +19,12 @@ const PostManagement = () => {
     const fetchPosts = () => {
         page.current += 1;
         axios
-            .get(SERVER_DOMAIN + `/getPosts?page=${page.current}&limit=5`, {
+            .get(`${SERVER_DOMAIN}/admin/getPostsManagement`, {
+                params: {
+                    post_status: activeTab,
+                    limit: 5,
+                    page: page.current
+                },
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -39,14 +45,27 @@ const PostManagement = () => {
 
     useEffect(() => {
         axios
-            .get(SERVER_DOMAIN + `/getPosts?page=${page.current}&limit=5`, {
+            .get(`${SERVER_DOMAIN}/admin/getPostsManagement`, {
+                params: {
+                    post_status: activeTab,
+                    limit: 5,
+                    page: page.current
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
             .then((res) => {
                 console.log("data", res.data.data);
                 setIsLoading(false);
                 setPosts(res.data.data);
+            })
+            .catch((err) => {
+                console.error("Error fetching posts:", err);
+                setIsLoading(false);
             });
-    }, [refresher]);
+    }, [refresher, activeTab]);
+
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -55,7 +74,13 @@ const PostManagement = () => {
     const filteredPost = posts.filter((post) =>
         (`${post.title} `).toLowerCase().includes(searchTerm.toLowerCase())
     );
-
+    const handleTabClick = (status) => {
+        setActiveTab(status);
+        setPosts([]); // Reset danh sách bài viết
+        setHasMore(true); // Cho phép tải thêm bài viết
+        page.current = 1; // Reset trang về 1
+        setRefresher(!refresher); // Trigger reload
+    };
     return (
         <div className="main-page">
             <div className="management">
@@ -81,6 +106,22 @@ const PostManagement = () => {
                     </form>
                     <div className="line"></div>
                 </div>
+                <nav>
+                    <ul className='flex '>
+                        <li
+                            className={activeTab === 0 ? 'active-tab' : ''}
+                            onClick={() => handleTabClick(0)}
+                        >
+                            Active Tab
+                        </li>
+                        <li
+                            className={activeTab === 1 ? 'active-tab' : ''}
+                            onClick={() => handleTabClick(1)}
+                        >
+                            Hidden Tab
+                        </li>
+                    </ul>
+                </nav>
                 <div className="post-management">
                     {!isLoading ? (
                         <InfiniteScroll

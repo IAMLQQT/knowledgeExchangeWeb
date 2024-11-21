@@ -24,13 +24,23 @@ router.patch(
   authController.protect,
   postController.hidePost,
 );
+router.patch(
+  '/activePost',
+  authController.protect,
+  postController.activePost,
+);
 
 router.get('/search', postController.searchPost);
-router.post('/addComment', authController.protect, commentsController.addComment);
-router.patch(
-  '/editComment',
+router.get(
+  '/postdetail/:postId',
   authController.protect,
-  commentsController.editComment,
+  postController.getPostDetail,
+);
+router.post('/addComment', authController.protect, commentsController.addComment);
+router.get(
+  '/getCommentReplies',
+  authController.protect,
+  commentsController.getCommentReplies,
 );
 router.delete(
   '/deleteComment',

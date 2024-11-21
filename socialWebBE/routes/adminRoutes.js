@@ -42,4 +42,12 @@ router
         authController.restrictTo(['admin']),
         adminController.updateUserRole,
     );
+router
+    .route('/getPostsManagement')
+    .get(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        adminController.getPostsManagement,
+    );
+
 module.exports = router;

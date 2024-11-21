@@ -9,7 +9,6 @@ import ShowMoreText from "react-show-more-text";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Outlet, useMatch } from "react-router-dom";
 import { useUser } from "../../../UserProvider";
-import RelyComment from "./RelyComment";
 function Comment({
   comment,
   userId,
@@ -250,7 +249,6 @@ function Comment({
         ) : (
           <button className="rely-button" onClick={handelRelyButton}>Rely</button>
         )}
-        {/* <RelyComment /> */}
       </div>
 
       {homeMatch ? (
