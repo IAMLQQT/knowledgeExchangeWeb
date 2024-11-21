@@ -30,6 +30,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true
     },
+    hiddenBy: {
+      type: DataTypes.ENUM('user','admin'),
+      allowNull: true,
+    },
     user_id: {
       type: DataTypes.STRING(15),
       allowNull: false,

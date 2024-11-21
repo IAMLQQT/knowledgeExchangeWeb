@@ -11,27 +11,28 @@ exports.getPosts = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const page = parseInt(req.query.page, 10) || 1;
   const userId = req.query.userId || null;
+  const post_status = parseInt(req.query.post_status) || null;
   // const userIdToken = req.user.user_id;
   const offset = (page - 1) * limit;
   const sorted = req.query.sorted;
   let whereConditions = {};
 
-  // if (sorted === 'community') {
-  //   // Get following users' IDs
-  //   const friendships = await friendship.findAll({
-  //     where: { user_id: userId },
-  //     attributes: ['user_friend_id'],
-  //   });
-  //   const friendshipsID = friendships.map((f) => f.user_friend_id);
-  //   console.log(friendshipsID);
+  if (sorted === 'community') {
+    // Get following users' IDs
+    const friendships = await friendship.findAll({
+      where: { user_id: userId },
+      attributes: ['user_friend_id'],
+    });
+    const friendshipsID = friendships.map((f) => f.user_friend_id);
+    console.log(friendshipsID);
 
-  //   // Create OR conditions for community sorting
-  //   whereConditions = {
-  //     user_id: { [Op.in]: friendshipsID },
-  //   };
-  // } else if (userId) {
-  //   whereConditions.user_id = userId;
-  // }
+    // Create OR conditions for community sorting
+    whereConditions = {
+      user_id: { [Op.in]: friendshipsID },
+    };
+  } else if (userId) {
+    whereConditions.user_id = userId;
+  }
 
   const newsfeed = await posts.findAll({
     offset,
@@ -68,15 +69,15 @@ exports.getPosts = catchAsync(async (req, res, next) => {
         attributes: ['tag_name'],
       },
     ],
-    where: { original_post_id: null,  post_status: '0'},
-    attributes: ['title', 'created_at', 'post_id'],
+    where: { original_post_id: null, post_status: post_status || "0" },
+    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy'],
     order: [['created_at', 'DESC']],
   });
 
   if (!newsfeed) {
     return next(new AppError('Error while getting newsfeed', 404));
   }
- 
+
   const postsWithCounts = newsfeed.map((post) => {
     const commentCount = post.commentPost.length;
     const likeCount = post.likes.length;
@@ -417,7 +418,7 @@ exports.searchPost = catchAsync(async (req, res, next) => {
       ),
     ];
   }
-  console.log("dday laf ",userCriteria);
+  console.log("dday laf ", userCriteria);
   if (date !== null) {
     const unixDate = moment(date, 'DD/MM/YYYY').unix();
     searchCriteria.created_at = {
@@ -521,9 +522,9 @@ exports.deletePost = catchAsync(async (req, res, next) => {
         where: { post_id: post_id },
       }),
     )
-    .then(() => 
+    .then(() =>
       tags_posts.destroy({
-        where : {post_id: post_id}
+        where: { post_id: post_id }
       })
     )
     .then(() =>
@@ -535,9 +536,9 @@ exports.deletePost = catchAsync(async (req, res, next) => {
 });
 
 exports.hidePost = catchAsync(async (req, res, next) => {
-  const { post_id } = req.body;
+  const { post_id, RoleID } = req.body;
 
- 
+
   const post = await posts.findOne({
     where: { post_id: post_id, original_post_id: null },
     attributes: ['post_status'],
@@ -547,15 +548,15 @@ exports.hidePost = catchAsync(async (req, res, next) => {
     return next(new AppError('Post not found!', 404));
   }
 
-  
+
   if (post.post_status == '1') {
     return next(new AppError('Post is already hidden!', 400));
   }
 
-  
+
   await posts.update(
-    { post_status: 1 },
-    { where: { post_id: post_id, original_post_id: null} }
+    { post_status: 1, hiddenBy: RoleID },
+    { where: { post_id: post_id, original_post_id: null } }
   );
 
   res.status(200).json({
@@ -566,7 +567,7 @@ exports.hidePost = catchAsync(async (req, res, next) => {
 exports.activePost = catchAsync(async (req, res, next) => {
   const { post_id } = req.body;
 
- 
+
   const post = await posts.findOne({
     where: { post_id: post_id, original_post_id: null },
     attributes: ['post_status'],
@@ -576,15 +577,15 @@ exports.activePost = catchAsync(async (req, res, next) => {
     return next(new AppError('Post not found!', 404));
   }
 
-  
+
   if (post.post_status == '0') {
     return next(new AppError('Post is already active!', 400));
   }
 
-  
+
   await posts.update(
-    { post_status: 0 },
-    { where: { post_id: post_id, original_post_id: null} }
+    { post_status: 0, hiddenBy: null },
+    { where: { post_id: post_id, original_post_id: null } }
   );
 
   res.status(200).json({

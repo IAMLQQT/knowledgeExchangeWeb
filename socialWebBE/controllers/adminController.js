@@ -112,7 +112,6 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
 exports.getPostsManagement = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const page = parseInt(req.query.page, 10) || 1;
-  const userId = req.query.userId || null;
   const post_status = parseInt(req.query.post_status) ;
   // const userIdToken = req.user.user_id;
   const offset = (page - 1) * limit;
@@ -172,7 +171,7 @@ exports.getPostsManagement = catchAsync(async (req, res, next) => {
       },
     ],
     where: { original_post_id: null,  post_status: post_status},
-    attributes: ['title', 'created_at', 'post_id', 'post_status'],
+    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy'],
     order: [['created_at', 'DESC']],
   });
 

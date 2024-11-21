@@ -82,6 +82,40 @@
       
     }
   }
+  nav {
+    margin-top: 10px;
+    ul {
+      padding: 5px;
+      li {
+        margin-right: 10px;
+        cursor: pointer;
+        &:hover {
+          &::after {
+            width: 100%;
+            background-color: #333333;
+          }
+        }
+        &::after {
+          content: "";
+          width: 0%;
+          height: 3px;
+          background-color: #ffffff;
+          display: block;
+          margin-top: 8px;
+          transition: 0.3s;
+        }
+        &.active-tab {
+          color: #000000; // Màu sắc cho tab đang được chọn
+          font-weight: bold; // Tô đậm chữ
+          &::after {
+            width: 100%;
+            background-color: #333333; // Đổi màu underline khi được chọn
+          }
+        }
+      }
+      
+    }
+   }
   .profile-section {
     margin-top: 2rem;
 

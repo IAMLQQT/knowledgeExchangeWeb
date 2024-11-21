@@ -154,6 +154,49 @@ export default function PostDetail() {
   const handleEditButton = () => {
     setIsEditModalOpen(true);
   };
+  const handelHidePost = (post_id, RoleID) => {
+    console.log(post_id);
+    confirmAlert({
+      title: `Hide Post "${postDetail.title}"!`,
+      message: "Are you sure to hide this post?",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => {
+            axios
+              .patch(
+                `${SERVER_DOMAIN}/hidePost`,
+                { post_id, RoleID }, // Đảm bảo gửi đúng dữ liệu
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+              .then(() => {
+                toast.success("Post hidden successfully!", {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+                navigate(-1);
+                setRefresher((prev) => !prev);
+              })
+              .catch((err) => {
+                console.error(err);
+                toast.error("Something went wrong! Please try again!", {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+              });
+          },
+        },
+        {
+          label: "No",
+          onClick: () => { },
+        },
+      ],
+    });
+  };
   const handleDeletePost = () => {
     confirmAlert({
       title: "Delete post!",
@@ -324,6 +367,11 @@ export default function PostDetail() {
                           <li>
                             <button type="button" onClick={handleEditButton}>
                               Edit
+                            </button>
+                          </li>
+                          <li>
+                            <button type="button" onClick={() => handelHidePost(postDetail.post_id, 'user')}>
+                              Hidden
                             </button>
                           </li>
                           <li>

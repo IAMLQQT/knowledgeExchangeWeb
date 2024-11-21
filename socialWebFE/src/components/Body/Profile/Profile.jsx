@@ -25,16 +25,18 @@ export default function Profile() {
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const [modalIsOpen, setIsOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+
   const { userId } = useParams();
   const handleButtonClick = () => {
     setShowDropdown(!showDropdown);
   };
   const handleUnfriendClick = () => {
     setShowModal(true);
-};
-const handleCancelUnfriend = () => {
-  setShowModal(false);
-};
+  };
+  const handleCancelUnfriend = () => {
+    setShowModal(false);
+  };
   const navigate = useNavigate();
   const handleAddFriend = () => {
     axios
@@ -67,27 +69,27 @@ const handleCancelUnfriend = () => {
   };
   const handleConfirmUnfriend = () => {
     axios
-        .post(
-            SERVER_DOMAIN + "/user/unfriend",
-            {
-                user_friend_id: userProfile.user_id,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        )
-        .then((res) => {
-            console.log("Unfriended successfully:", res.data);
-            setShowModal(false);
-            setShowDropdown(false);
-            setRefresher(!refresher)
-        })
-        .catch((err) => {
-            console.error("Error unfriending:", err);
-        });
-};
+      .post(
+        SERVER_DOMAIN + "/user/unfriend",
+        {
+          user_friend_id: userProfile.user_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((res) => {
+        console.log("Unfriended successfully:", res.data);
+        setShowModal(false);
+        setShowDropdown(false);
+        setRefresher(!refresher)
+      })
+      .catch((err) => {
+        console.error("Error unfriending:", err);
+      });
+  };
   useEffect(() => {
     const apiEndpoint = userId
       ? `${SERVER_DOMAIN}/user/getUserSearchProfile/${userId}`
@@ -122,7 +124,7 @@ const handleCancelUnfriend = () => {
   }, [userId, refresher]);
   useEffect(() => {
     axios
-      .get(SERVER_DOMAIN + `/getPosts?page=1&limit=5&userId=${userId}`, {
+      .get(SERVER_DOMAIN + `/getPosts?post_status=${activeTab}&page=1&limit=5&userId=${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -133,13 +135,13 @@ const handleCancelUnfriend = () => {
         setPosts(res.data.data);
 
       });
-  }, [userProfile, refresher]);
+  }, [userProfile, refresher, activeTab]);
   const fetchPosts = () => {
     page.current += 1;
     axios
       .get(
         SERVER_DOMAIN +
-        `/getPosts?page=${page.current}&limit=5&userId=${userId}`,
+        `/getPosts?post_status=${activeTab}&page=${page.current}&limit=5&userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -160,6 +162,13 @@ const handleCancelUnfriend = () => {
         setHasMore(false);
       });
   };
+  const handleTabClick = (status) => {
+    setActiveTab(status)
+    setPosts([]);
+    setHasMore(true);
+    page.current = 1;
+    setRefresher(!refresher);
+  };
   if (!user || !userProfile) return <Code />;
   return (
     <div className="profile">
@@ -176,7 +185,7 @@ const handleCancelUnfriend = () => {
             <div className="profile-name flex a-center">
               <h3 className="first-name">{userProfile.first_name}</h3>
               <h3 className="last-name">{userProfile.last_name}</h3>
-             
+
             </div>
             <h5 className="followers">{userProfile.friendships} Friends</h5>
           </div>
@@ -190,22 +199,22 @@ const handleCancelUnfriend = () => {
                   <img src="/check.png" alt="Friends" />
                 </button>
                 {showDropdown && (
-                  <div className="dropdown-menu" style={{ position: 'absolute', top: '110%', right : '0', background: '#fff', zIndex: 1000 }}>
-                   <button className="unfriend-button" onClick={handleUnfriendClick}>
+                  <div className="dropdown-menu" style={{ position: 'absolute', top: '110%', right: '0', background: '#fff', zIndex: 1000 }}>
+                    <button className="unfriend-button" onClick={handleUnfriendClick}>
                       Unfriend
                     </button>
                   </div>
                 )}
                 {showModal && (
-                <>
+                  <>
                     <div className="modal-backdrop" />
                     <div className="modal">
-                        <p>Are you sure you want to unfriend {userProfile.first_name} {userProfile.last_name}?</p>
-                        <button onClick={handleConfirmUnfriend}>Yes</button>
-                        <button onClick={handleCancelUnfriend}>No</button>
+                      <p>Are you sure you want to unfriend {userProfile.first_name} {userProfile.last_name}?</p>
+                      <button onClick={handleConfirmUnfriend}>Yes</button>
+                      <button onClick={handleCancelUnfriend}>No</button>
                     </div>
-                </>
-            )}
+                  </>
+                )}
               </div>
             ) : userProfile.isRequestFriend ? (
               <button className="following flex a-center">
@@ -252,9 +261,24 @@ const handleCancelUnfriend = () => {
                 setIsOpen={setIsOpen}
                 user={user?.user}
               />
+              <nav>
+                <ul className='flex '>
+                  <li
+                    className={activeTab === 0 ? 'active-tab' : ''}
+                    onClick={() => handleTabClick(0)}
+                  >
+                    Active Tab
+                  </li>
+                  <li
+                    className={activeTab === 1 ? 'active-tab' : ''}
+                    onClick={() => handleTabClick(1)}
+                  >
+                    Hidden Tab
+                  </li>
+                </ul>
+              </nav>
             </>
           )}
-
           {!isLoading ? (
             posts.length === 0 ? (
               <p style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -273,7 +297,7 @@ const handleCancelUnfriend = () => {
                 }
               >
                 {posts.map((post) => (
-                  <Post post={post} key={post.post_id} />
+                  <Post post={post} key={post.post_id} setRefresher={setRefresher} />
                 ))}
               </InfiniteScroll>
             )

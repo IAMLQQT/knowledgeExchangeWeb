@@ -138,7 +138,7 @@ function SavedPost() {
                     user: bookmark.post.user,
                     created_at: bookmark.post.created_at,
                     likeCount: bookmark.post.likes.length,
-                    commentCount: bookmark.post.comments.length
+                    commentCount: bookmark.post.commentPost.length
                   }
                 }
                 key={bookmark.post_id}

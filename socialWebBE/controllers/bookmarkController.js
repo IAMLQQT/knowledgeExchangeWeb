@@ -33,8 +33,22 @@ exports.savePost = catchAsync(async (req, res, next) => {
           as: 'post',
           include: [
             {
-              model: comments,
-              as: 'comments',
+              model: posts,
+              as: 'commentPost',
+              required: false, 
+              attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
+              include: [
+                {
+                  model: user,
+                  as: 'user',
+                  attributes: [
+                    'user_id',
+                    'first_name',
+                    'last_name',
+                    'profile_picture',
+                  ],
+                },
+              ],
             },
             {
               model: likes,
