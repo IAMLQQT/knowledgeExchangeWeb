@@ -75,7 +75,12 @@ function Message() {
       limit: 15,
     });
   };
-
+  const handelChatGroup = () => {
+    socket.emit('createGroup', {
+      group_name:"Thinh",
+      member_ids: ["yCBsFOX6dmMaBqz", "cvDE8obb79UycaG"]}
+    )
+  }
   const handleSendMessage = (e) => {
     if (
       e.keyCode === 13 &&
@@ -165,7 +170,9 @@ function Message() {
           console.log(err);
         });
     });
-
+    newSocket.on("groupCreated",(data)=> {
+      console.log("da tao group", data)
+    })
     setSocket(newSocket);
   }, [selectedRoom]);
   useEffect(() => {
@@ -311,6 +318,7 @@ function Message() {
               </div>
             </div>
           ))}
+            <button onClick={handelChatGroup}>Tạo nhóm</button>
         </div>
         <div className="chat-box">
           <div className="message-ctn" id={"scrollableDiv"}>

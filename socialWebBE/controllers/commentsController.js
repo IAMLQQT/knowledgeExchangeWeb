@@ -60,43 +60,124 @@ exports.editComment = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ status: 'success' });
 });
-exports.getCommentReplies = catchAsync(async (req, res) => {
-  const { post_id } = req.body;
+
+exports.getCommentReplies = catchAsync(async (req, res, next) => {
+  const post_id = req.query.post_id;
 
   try {
-    const post = await posts.findOne({
-      where: { post_id: post_id },
-      attributes: ['original_post_id'],
-    });
-    
-  if (post && post.original_post_id === null) {
-    return next(new AppError('You are not allowed to add rely comment!', 403));
-  }
-    const relyComments = await posts.findAll({
-      where: { post_id, original_post_id: { [Op.ne]: null }}, 
-      attributes: [],
+    // Lấy các bình luận chính (original_post_id là null)
+    const mainComments = await posts.findAll({
+      where: { post_id, original_post_id: { [Op.ne]: null } },
+      attributes: ["post_id", "content", "created_at", "user_id"],
       include: [
         {
-          model: posts, 
-          as: "commentPost",
-          attributes: ["post_id", "content", "created_at", "user_id"], 
-          include: [
-            {
-              model: user, 
-              as: "user",
-              attributes: ["user_id", "first_name", "last_name", "profile_picture"], 
-            },
-          ],
+          model: user,
+          as: "user",
+          attributes: ["user_id", "first_name", "last_name", "profile_picture"],
         },
       ],
     });
-    if (relyComments.length === 0) {
-      return next(new AppError('There is no Rely Comment!', 200));
-  }
-    
-    return res.status(200).json(relyComments);
+
+    // Lấy tất cả các bình luận trả lời (original_post_id không null)
+    const allReplies = await posts.findAll({
+      where: { original_post_id: post_id},
+      attributes: ["post_id", "content", "created_at", "user_id", "original_post_id"],
+      include: [
+        {
+          model: user,
+          as: "user",
+          attributes: ["user_id", "first_name", "last_name", "profile_picture"],
+        },
+      ],
+    });
+
+    // Tạo cấu trúc cha-con (parent-child)
+    const commentMap = new Map();
+
+    // Map main comments
+    mainComments.forEach((comment) => {
+      commentMap.set(comment.post_id, { ...comment.toJSON(), replies: [] });
+    });
+
+    // Map replies vào bình luận chính
+    allReplies.forEach((reply) => {
+      const parentComment = commentMap.get(reply.original_post_id);
+      if (parentComment) {
+        parentComment.replies.push(reply.toJSON());
+      }
+    });
+
+    // Chuyển Map thành danh sách các bình luận
+    const commentsWithReplies = Array.from(commentMap.values());
+
+    // Trả về dữ liệu
+    if (commentsWithReplies.length === 0) {
+      return next(new AppError("There are no comments or replies!", 200));
+    }
+
+    return res.status(200).json(commentsWithReplies);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// exports.getCommentReplies = catchAsync(async (req, res, next) => {
+//   const post_id = req.query.post_id;
+
+//   if (!post_id) {
+//     return res.status(400).json({ message: "post_id is required in query parameters." });
+//   }
+
+//   try {
+//     // Lấy tất cả các bình luận và trả lời từ cơ sở dữ liệu
+//     const allComments = await posts.findAll({
+//       where: { post_id, original_post_id: { [Op.ne]: null } },
+//       attributes: ["post_id", "content", "created_at", "user_id", "original_post_id"],
+//       include: [
+//         {
+//           model: user,
+//           as: "user",
+//           attributes: ["user_id", "first_name", "last_name", "profile_picture"],
+//         },
+//       ],
+//     });
+//     console.log("đây là: ", allComments);
+    
+//     if (!allComments || allComments.length === 0) {
+//       return next(new AppError("There are no comments or replies!", 200));
+//     }
+
+//     // Chuyển dữ liệu thành dạng plain object để dễ xử lý
+//     const comments = allComments.map((comment) => comment.toJSON());
+
+//     // Tạo cấu trúc cha-con bằng cách dùng Map
+//     const commentMap = new Map();
+
+//     comments.forEach((comment) => {
+//       comment.replies = []; // Thêm mảng replies vào mỗi comment
+//       commentMap.set(comment.original_post_id, comment); // Lưu vào Map với key là post_id
+//     });
+
+//     // Gắn replies vào các comment cha
+//     const rootComments = [];
+
+//     comments.forEach((comment) => {
+//       if (comment.original_post_id) {
+//         const parentComment = commentMap.get(comment.original_post_id);
+//         if (parentComment) {
+//           parentComment.replies.push(comment);
+//         }
+//       } else {
+//         rootComments.push(comment); // Đây là các bình luận gốc (main comments)
+//       }
+//     });
+
+//     // Trả về danh sách bình luận gốc, bao gồm các trả lời lồng nhau
+//     return res.status(200).json(rootComments);
+//   } catch (error) {
+//     console.error("Error:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+

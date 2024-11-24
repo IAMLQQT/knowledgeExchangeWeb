@@ -3,6 +3,7 @@ const authController = require('../controllers/authController');
 const postController = require('../controllers/postController');
 const bookmarkController = require('../controllers/bookmarkController')
 const likesController = require('../controllers/likesController')
+const forumController = require('../controllers/forumController');
 const commentsController = require('../controllers/commentsController')
 const router = express.Router();
 router.get('/getPosts', postController.getPosts);
@@ -57,5 +58,20 @@ router.get(
   '/getSavedPosts',
   authController.protect,
   bookmarkController.getSavedPosts,
+);
+router.get(
+  '/getAllForums',
+  authController.protect,
+  forumController.getAllForums,
+);
+router.post(
+  '/createPostToForums',
+  authController.protect,
+  forumController.createPostToForums,
+);
+router.get(
+  '/getPostForum/:forum_id',
+  authController.protect,
+  forumController.getPostForum,
 );
 module.exports = router;

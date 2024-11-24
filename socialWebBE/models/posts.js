@@ -14,25 +14,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    created_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
-    updated_at: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-    },
     code: {
       type: DataTypes.TEXT,
       allowNull: true
     },
     post_status: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
-    },
-    hiddenBy: {
-      type: DataTypes.ENUM('user','admin'),
       allowNull: true,
+      defaultValue: 0
     },
     user_id: {
       type: DataTypes.STRING(15),
@@ -46,6 +35,18 @@ module.exports = function(sequelize, DataTypes) {
     original_post_id: {
       type: DataTypes.STRING(25),
       allowNull: true
+    },
+    hiddenBy: {
+      type: DataTypes.ENUM('user','admin'),
+      allowNull: true
+    },
+    forum_id: {
+      type: DataTypes.STRING(30),
+      allowNull: true,
+      references: {
+        model: 'forum',
+        key: 'forum_id'
+      }
     }
   }, {
     sequelize,
@@ -74,6 +75,13 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "user_id" },
+        ]
+      },
+      {
+        name: "fk_posts_forums_idx",
+        using: "BTREE",
+        fields: [
+          { name: "forum_id" },
         ]
       },
     ]

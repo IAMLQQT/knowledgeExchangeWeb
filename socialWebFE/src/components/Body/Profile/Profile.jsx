@@ -267,13 +267,13 @@ export default function Profile() {
                     className={activeTab === 0 ? 'active-tab' : ''}
                     onClick={() => handleTabClick(0)}
                   >
-                    Active Tab
+                    Active Post
                   </li>
                   <li
                     className={activeTab === 1 ? 'active-tab' : ''}
                     onClick={() => handleTabClick(1)}
                   >
-                    Hidden Tab
+                    Hidden Post
                   </li>
                 </ul>
               </nav>

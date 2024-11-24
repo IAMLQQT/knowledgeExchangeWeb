@@ -7,163 +7,429 @@ const chalk = require('chalk');
 const membersRef = db.ref('members');
 const chatsRef = db.ref('chats');
 const messagesRef = db.ref('messages');
+
 module.exports = async (socket) => {
   const token = socket.handshake.query.token;
-  
   if (!token) return;
-  let userProfile = cacheStorage.get(token); //null or data
+  
+  let userProfile = cacheStorage.get(token);
   if (!userProfile) {
     const userInfo = await verifyToken(token);
-    console.log(userInfo);
-    if (!userInfo) return; //if token is not valid then return
-    cacheStorage.set(token, userInfo, 10000); // else save in cache
+    if (!userInfo) return;
+    cacheStorage.set(token, userInfo, 10000);
     userProfile = userInfo;
   }
 
   socket.emit('connected');
 
-  // Xử lý sự kiện khi client gửi dữ liệu lên server
+  // Lấy danh sách cuộc trò chuyện (cá nhân và nhóm)
   socket.on('getUserIdsMessaged', async () => {
-    console.log('emited getChat list');
+    console.log('Fetching chat list');
     const chatInfo = [];
     const promises = [];
 
-    await membersRef.orderByKey().once('value', function (snapshot) {
+    try {
+      const snapshot = await membersRef.orderByKey().once('value');
+      
       if (snapshot.exists()) {
-        snapshot.forEach(function (childSnapshot) {
-          // Lấy dữ liệu của mỗi phần tử
-          let childData = childSnapshot.val();
+        snapshot.forEach((childSnapshot) => {
+          const childData = childSnapshot.val();
+          
+          // Kiểm tra người dùng có trong conversation không
           if (childData[userProfile.user_id]) {
-            const recipientId = Object.keys(childData).find(
-              (key) => key != userProfile.user_id,
-            );
-            const newObj = {
-              recipient_id: recipientId,
-              room_id: childSnapshot.key,
-            };
-            delete newObj[userProfile.user_id];
-
-            console.log(chalk.cyanBright(childSnapshot.key));
             const promise = chatsRef
               .child(childSnapshot.key)
               .once('value')
-              .then((snapshot) => {
-                chatInfo.push({ ...newObj, ...snapshot.val() });
+              .then((chatSnapshot) => {
+                const chatData = chatSnapshot.val() || {};
+                
+                // Xử lý chat 1-1
+                if (!chatData.is_group_chat) {
+                  const recipientId = Object.keys(childData)
+                    .find(key => key !== userProfile.user_id);
+                  
+                  chatInfo.push({
+                    recipient_id: recipientId,
+                    room_id: childSnapshot.key,
+                    ...chatData
+                  });
+                } 
+                // Xử lý chat nhóm
+                else {
+                  chatInfo.push({
+                    group_id: childSnapshot.key,
+                    ...chatData
+                  });
+                }
               });
 
             promises.push(promise);
           }
         });
       }
-    });
 
-    // Chờ cho tất cả các promises hoàn thành
-    await Promise.all(promises);
-    console.log(chatInfo); // Convert into single array instead of [{},{}]
-    socket.emit('userIdsMessagedResponse', {
-      chatInfo: chatInfo,
-    });
-  });
-  socket.on('getChatMessages', async (data) => {
-    console.log('triggered');
-    const { roomId } = data;
-    const page = data.page * 1 || 1;
-    const limit = data.limit * 1 || 10;
-    if (!userProfile || !roomId) return;
-    messagesRef
-      .child(roomId)
-      .limitToLast(1)
-      .on('child_added', (snapshot) => {
-        //   console.log('added-mess', snapshot.val());
-        if (snapshot.val().user_id != userProfile.user_id) {
-          const newMessage = snapshot.val();
-          console.log('sent incoming message');
-          socket.emit('incoming-message', {
-            newMessage: newMessage,
-          });
-        }
+      // Chờ tất cả promises hoàn thành
+      await Promise.all(promises);
+      
+      socket.emit('userIdsMessagedResponse', { chatInfo });
+    } catch (error) {
+      console.error(chalk.red('Error fetching chat list:'), error);
+      socket.emit('chatListError', { 
+        message: 'Failed to fetch chat list',
+        error: error.toString()
       });
-    await messagesRef
-      .child(roomId)
-      .limitToLast(page * limit)
-      .once('value', (snapshot) => {
-        socket.emit('chatMessagesResponse', { allMessages: snapshot.val() });
-      });
-  });
-  socket.on('newMessage', async (data) => {
-    const { recipient_id, message, timestamp } = data;
-    if (!recipient_id) return;
-    console.log(chalk.bgBlue('im in'), timestamp);
-    let roomId = null,
-      isFound = false;
-    await membersRef.once('value', function (snapshot) {
-      // Kiểm tra xem có dữ liệu trong snapshot hay không
-
-      if (snapshot.exists()) {
-        console.log(chalk.bgBlue('existed'));
-        // Duyệt qua các phần tử trong snapshot
-        snapshot.forEach(function (childSnapshot) {
-          // Lấy dữ liệu của mỗi phần tử
-          let childData = childSnapshot.val();
-          console.log(childData[userProfile.user_id], childData[recipient_id]);
-          if (
-            childData[userProfile.user_id] &&
-            childData[recipient_id] &&
-            isFound == false
-          ) {
-            roomId = childSnapshot.key;
-            isFound = true;
-          }
-        });
-      } else {
-        console.log('Không có dữ liệu trong cơ sở dữ liệu.');
-      }
-    });
-    const user_id = userProfile.user_id;
-    console.log(chalk.cyanBright(roomId));
-    if (!roomId) {
-      console.log(chalk.bgCyan('create new roomId'));
-      const newChatRoomRef = membersRef.push();
-      const newChatRoomId = newChatRoomRef.key; // to get unique roomId by Realtime DB
-      newChatRoomRef.update({
-        [user_id]: true,
-        [recipient_id]: true,
-      });
-      messagesRef.update({ [newChatRoomId]: {} });
-      messagesRef
-        .child(newChatRoomId)
-        .push({ user_id: user_id, message: message, timestamp: timestamp });
-      chatsRef.update({ [newChatRoomId]: {} });
-      chatsRef.child(newChatRoomId).set({
-        sender_id: user_id,
-        last_message: message,
-        timestamp: timestamp,
-      });
-    } else {
-      console.log(chalk.bgCyan('push  roomId'));
-      chatsRef.child(roomId).update({
-        sender_id: user_id,
-        last_message: message,
-        timestamp: timestamp,
-      });
-      messagesRef
-        .child(roomId)
-        .push({ user_id: user_id, message: message, timestamp: timestamp });
-      console.log('newMessage: ', message);
     }
   });
 
+  // Lấy tin nhắn của một cuộc trò chuyện
+  socket.on('getChatMessages', async (data) => {
+    const { roomId, page = 1, limit = 50 } = data;
+    
+    if (!userProfile || !roomId) return;
+
+    try {
+      // Lắng nghe tin nhắn mới
+      messagesRef
+        .child(roomId)
+        .limitToLast(1)
+        .on('child_added', (snapshot) => {
+          const newMessage = snapshot.val();
+          
+          // Chỉ gửi tin nhắn của người khác
+          if (newMessage.user_id !== userProfile.user_id) {
+            socket.emit('incoming-message', { newMessage });
+          }
+        });
+
+      // Lấy danh sách tin nhắn
+      const snapshot = await messagesRef
+        .child(roomId)
+        .limitToLast(page * limit)
+        .once('value');
+
+      socket.emit('chatMessagesResponse', { 
+        allMessages: snapshot.val() || {}
+      });
+    } catch (error) {
+      console.error(chalk.red('Error fetching messages:'), error);
+      socket.emit('chatMessagesError', { 
+        message: 'Failed to fetch messages',
+        error: error.toString()
+      });
+    }
+  });
+
+  // Gửi tin nhắn (hỗ trợ cả chat 1-1 và nhóm)
+  socket.on('newMessage', async (data) => {
+    const { recipient_id, group_id, message, timestamp } = data;
+    
+    // Validate input
+    if (!recipient_id && !group_id) {
+      return socket.emit('messageError', { 
+        message: 'Invalid message: No recipient or group specified' 
+      });
+    }
+
+    const user_id = userProfile.user_id;
+
+    try {
+      let roomId = null;
+      const isGroupChat = !!group_id;
+
+      // Xử lý chat nhóm
+      if (isGroupChat) {
+        // Kiểm tra nhóm tồn tại
+        const groupSnapshot = await membersRef.child(group_id).once('value');
+        if (!groupSnapshot.exists()) {
+          return socket.emit('messageError', { 
+            message: 'Group does not exist' 
+          });
+        }
+
+        // Kiểm tra người dùng có trong nhóm không
+        const groupMembers = groupSnapshot.val();
+        if (!groupMembers[user_id]) {
+          return socket.emit('messageError', { 
+            message: 'User not in this group' 
+          });
+        }
+
+        roomId = group_id;
+      } 
+      // Xử lý chat 1-1
+      else {
+        // Tìm hoặc tạo room chat 1-1
+        const snapshot = await membersRef.once('value');
+        let existingRoom = null;
+
+        snapshot.forEach((childSnapshot) => {
+          const childData = childSnapshot.val();
+          if (childData[user_id] && childData[recipient_id]) {
+            existingRoom = childSnapshot.key;
+            return true;
+          }
+        });
+
+        // Nếu chưa có room, tạo mới
+        if (!existingRoom) {
+          const newChatRoomRef = membersRef.push();
+          roomId = newChatRoomRef.key;
+          
+          await newChatRoomRef.update({
+            [user_id]: true,
+            [recipient_id]: true,
+          });
+          
+          // Khởi tạo messages và chats
+          await messagesRef.update({ [roomId]: {} });
+          await chatsRef.update({ [roomId]: {} });
+        } else {
+          roomId = existingRoom;
+        }
+      }
+
+      // Chuẩn bị dữ liệu tin nhắn
+      const messageData = {
+        user_id: user_id,
+        message: message,
+        timestamp: timestamp,
+        ...(isGroupChat ? { 
+          username: userProfile.username || userProfile.name 
+        } : {})
+      };
+
+      // Lưu tin nhắn
+      const newMessageRef = messagesRef.child(roomId).push();
+      await newMessageRef.set(messageData);
+
+      // Cập nhật thông tin chat
+      const chatUpdateData = {
+        last_message: message,
+        sender_id: user_id,
+        timestamp: timestamp,
+        ...(isGroupChat ? { 
+          is_group_chat: true,
+          group_name: await getGroupName(group_id)
+        } : { 
+          is_group_chat: false 
+        })
+      };
+
+      await chatsRef.child(roomId).update(chatUpdateData);
+
+      // Trả về phản hồi
+      socket.emit('messageSuccess', { 
+        roomId: roomId, 
+        isGroupChat: isGroupChat 
+      });
+
+    } catch (error) {
+      console.error(chalk.red('Error sending message:'), error);
+      socket.emit('messageError', { 
+        message: 'Failed to send message',
+        error: error.toString()
+      });
+    }
+  });
+
+  // Tạo nhóm mới
+  socket.on('createGroup', async (data) => {
+    const { group_name, member_ids } = data;
+    const creator_id = userProfile.user_id;
+
+    // Validate input
+    if (!group_name || !member_ids || !Array.isArray(member_ids)) {
+      return socket.emit('groupCreationError', { 
+        message: 'Invalid group creation parameters' 
+      });
+    }
+
+    try {
+      // Tạo nhóm mới
+      const newGroupRef = membersRef.push();
+      const new_group_id = newGroupRef.key;
+
+      // Chuẩn bị danh sách thành viên
+      const groupMembers = {
+        [creator_id]: {
+          role: 'admin',
+          joined_at: Date.now()
+        }
+      };
+
+      // Thêm các thành viên khác
+      member_ids.forEach(memberId => {
+        if (memberId !== creator_id) {
+          groupMembers[memberId] = {
+            role: 'member',
+            joined_at: Date.now()
+          };
+        }
+      });
+
+      // Lưu thành viên nhóm
+      await newGroupRef.set(groupMembers);
+
+      // Tạo thông tin chat cho nhóm
+      const groupChatData = {
+        group_name: group_name,
+        creator_id: creator_id,
+        created_at: Date.now(),
+        last_message: 'Group created',
+        timestamp: Date.now(),
+        is_group_chat: true,
+        members_count: Object.keys(groupMembers).length
+      };
+
+      await chatsRef.child(new_group_id).set(groupChatData);
+
+      // Khởi tạo messages cho nhóm
+      await messagesRef.child(new_group_id).push({
+        system_message: true,
+        message: `Group created by ${userProfile.username || creator_id}`,
+        timestamp: Date.now(),
+        user_id: creator_id
+      });
+
+      // Trả về thông tin nhóm mới
+      socket.emit('groupCreated', { 
+        group_id: new_group_id, 
+        group_name: group_name,
+        members: Object.keys(groupMembers)
+      });
+
+    } catch (error) {
+      console.error(chalk.red('Error creating group:'), error);
+      socket.emit('groupCreationError', { 
+        message: 'Failed to create group',
+        error: error.toString()
+      });
+    }
+  });
+
+  // Cập nhật thông tin nhóm
+  socket.on('updateGroupInfo', async (data) => {
+    const { group_id, group_name, add_members, remove_members } = data;
+    const user_id = userProfile.user_id;
+
+    try {
+      // Kiểm tra quyền của người dùng
+      const groupSnapshot = await membersRef.child(group_id).once('value');
+      const groupMembers = groupSnapshot.val();
+
+      // Kiểm tra quyền admin
+      if (!groupMembers[user_id] || groupMembers[user_id].role !== 'admin') {
+        return socket.emit('groupUpdateError', { 
+          message: 'Insufficient permissions' 
+        });
+      }
+
+      // Cập nhật tên nhóm
+      if (group_name) {
+        await chatsRef.child(group_id).update({ group_name });
+      }
+
+      // Thêm thành viên mới
+      if (add_members && Array.isArray(add_members)) {
+        add_members.forEach(memberId => {
+          if (!groupMembers[memberId]) {
+            groupMembers[memberId] = {
+              role: 'member',
+              joined_at: Date.now()
+            };
+          }
+        });
+
+        // Cập nhật số lượng thành viên
+        await chatsRef.child(group_id).update({ 
+          members_count: Object.keys(groupMembers).length 
+        });
+
+        // Lưu danh sách thành viên mới
+        await membersRef.child(group_id).set(groupMembers);
+      }
+
+      // Xóa thành viên
+      if (remove_members && Array.isArray(remove_members)) {
+        remove_members.forEach(memberId => {
+          if (groupMembers[memberId] && memberId !== user_id) {
+            delete groupMembers[memberId];
+          }
+        });
+
+        // Cập nhật số lượng thành viên
+        await chatsRef.child(group_id).update({ 
+          members_count: Object.keys(groupMembers).length 
+        });
+
+        // Lưu danh sách thành viên sau khi xóa
+        await membersRef.child(group_id).set(groupMembers);
+      }
+
+      // Gửi phản hồi thành công
+      socket.emit('groupUpdated', { 
+        group_id, 
+        group_name,
+        members: Object.keys(groupMembers)
+      });
+
+    } catch (error) {
+      console.error(chalk.red('Error updating group:'), error);
+      socket.emit('groupUpdateError', { 
+        message: 'Failed to update group',
+        error: error.toString()
+      });
+    }
+  });
+
+  // Lấy danh sách nhóm của người dùng
+  socket.on('getUserGroups', async () => {
+    try {
+      const userGroups = [];
+
+      const snapshot = await membersRef.once('value');
+      
+      for (const [groupId, groupMembers] of Object.entries(snapshot.val() || {})) {
+        // Kiểm tra xem người dùng có trong nhóm không
+        if (groupMembers[userProfile.user_id]) {
+          // Lấy thông tin chi tiết của nhóm
+          const chatSnapshot = await chatsRef.child(groupId).once('value');
+          const groupInfo = chatSnapshot.val();
+
+          userGroups.push({
+            group_id: groupId,
+            ...groupInfo,
+            user_role: groupMembers[userProfile.user_id].role
+          });
+        }
+      }
+
+      // Gửi danh sách nhóm về client
+      socket.emit('userGroupsResponse', { groups: userGroups });
+
+    } catch (error) {
+      console.error(chalk.red('Error fetching user groups:'), error);
+      socket.emit('userGroupsError', { 
+        message: 'Failed to fetch groups',
+        error: error.toString()
+      });
+    }
+  });
+
+  // Hàm hỗ trợ: Lấy tên nhóm
+  async function getGroupName(group_id) {
+    const snapshot = await chatsRef.child(group_id).once('value');
+    return snapshot.val()?.group_name || 'Unnamed Group';
+  }
+
+  // Xử lý lỗi kết nối
   socket.on('connect_error', (err) => {
-    // the reason of the error, for example "xhr poll error"
-    console.log('connect error', err.message);
-
-    // some additional description, for example the status code of the initial HTTP response
+    console.log('Connect error', err.message);
     console.log(err.description);
-
-    // some additional context, for example the XMLHttpRequest object
     console.log(err.context);
   });
-  // Xử lý sự kiện khi client ngắt kết nối
+
+  // Xử lý ngắt kết nối
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });

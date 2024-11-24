@@ -69,7 +69,7 @@ exports.getPosts = catchAsync(async (req, res, next) => {
         attributes: ['tag_name'],
       },
     ],
-    where: { original_post_id: null, post_status: post_status || "0" },
+    where: { forum_id: null,original_post_id: null, post_status: post_status || "0" },
     attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy'],
     order: [['created_at', 'DESC']],
   });

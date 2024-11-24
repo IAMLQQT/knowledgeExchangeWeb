@@ -5,6 +5,7 @@ const usersController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const friendshipController = require('../controllers/friendshipController');
 const adminController = require('../controllers/adminController');
+const forumController = require('../controllers/forumController');
 const router = express.Router();
 router.post('/login', authController.adminLogin);
 router
@@ -49,5 +50,32 @@ router
         authController.restrictTo(['admin']),
         adminController.getPostsManagement,
     );
-
+router
+    .route('/addForum')
+    .post(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        forumController.addForum,
+    );
+router
+    .route('/deletedForum')
+    .delete(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        forumController.deletedForum,
+    );
+router
+    .route('/hideForum')
+    .patch(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        forumController.hideForum,
+    );
+router
+    .route('/activeForum')
+    .patch(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        forumController.activeForum,
+    );
 module.exports = router;
