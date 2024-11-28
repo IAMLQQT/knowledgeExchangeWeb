@@ -41,7 +41,7 @@ function AdminNavbar() {
             className={`${tabSelected === "commentmanagement" && "active"} `}
           >
             <i className="fa-solid fa-id-card"></i>
-            <p>Comment Report Management</p>
+            <p>Report Management</p>
           </Link>
         </li>
         <li>

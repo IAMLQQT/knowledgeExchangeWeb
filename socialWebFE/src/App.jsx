@@ -6,6 +6,7 @@ import HomePage from "./components/Body/HomePage/HomePage";
 import "./reset.css";
 import PostDetail from "./components/Body/Post/PostDetail";
 import Profile from "./components/Body/Profile/Profile";
+import Forum from "./components/Body/Forum/Forum";
 import ProfileDetail from "./components/Body/Profile/ProfileDetail";
 import Message from "./components/Body/Message/Message";
 import SetInitialPassword from "./components/Login/Password/SetInitialPassword";
@@ -22,6 +23,8 @@ import AdminLogin from "./components/Admin/AdminLogin"
 import AdminHomePage from "./components/Admin/AdminPage/AdminHomePage";
 import UserManagement from "./components/Admin/AdminPage/Body/UserManagement";
 import PostManagement from "./components/Admin/AdminPage/Body/PostManagement";
+import ForumManagement from "./components/Admin/AdminPage/Body/ForumManagement";
+import ForumDetails from "./components/Body/Forum/ForumDetails";
 function App() {
   return (
     <BrowserRouter>
@@ -35,6 +38,8 @@ function App() {
               <Route path="savedposts" element={<SavedPost />} />
               <Route path="users" element={<Users />} />
               <Route path="search" element={<SearchResult />} />
+              <Route path="forum" element={<Forum/>} />  
+              <Route path="forum/:forum_id" element={<ForumDetails/>} />  
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/messages" element={<Message />} />
@@ -47,6 +52,8 @@ function App() {
               <Route path="usermanagement" element={<UserManagement />} />
               <Route path="postmanagement" element={<PostManagement />}/>
               <Route path="postmanagement/post/:postId" element={<PostDetail />} />
+              <Route path="forummanagement" element={<ForumManagement />} />
+              <Route path="forummanagement/:forum_id" element={<ForumDetails />} />
             </Route>
 
             <Route path="/admin/login" element={<AdminLogin />} />

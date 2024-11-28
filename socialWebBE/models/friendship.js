@@ -23,7 +23,11 @@ module.exports = function(sequelize, DataTypes) {
         model: 'user',
         key: 'user_id'
       }
-    }
+    }, 
+    created_at: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
   }, {
     sequelize,
     tableName: 'friendship',

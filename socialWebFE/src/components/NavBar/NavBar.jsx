@@ -29,7 +29,16 @@ function NavBar() {
             <p>Home</p>
           </Link>
         </li>
-
+        <li>
+          <Link
+            to="/forum"
+            onClick={() => setTabSelected("forum")}
+            className={`${tabSelected === "forum" && "active"} `}
+          > 
+            <i class="fa-solid fa-blog"></i>
+            <p>Forum Post</p>
+          </Link>
+        </li>
         <li>
           <Link to="/messages">
             <i className="fa-solid fa-message"></i>

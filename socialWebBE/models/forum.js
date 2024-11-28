@@ -19,10 +19,22 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: 0
     },
+    created_at: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
     forum_status: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: 0
+    },
+    user_id: {
+      type: DataTypes.STRING(15),
+      allowNull: false,
+      references: {
+        model: 'user',
+        key: 'user_id'
+      }
     }
   }, {
     sequelize,
@@ -35,6 +47,13 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "forum_id" },
+        ]
+      },
+      {
+        name: "fk_forum1_user1_idx",
+        using: "BTREE",
+        fields: [
+          { name: "user_id" },
         ]
       },
     ]

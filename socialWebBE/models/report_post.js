@@ -19,10 +19,6 @@ module.exports = function(sequelize, DataTypes) {
         key: 'post_id'
       }
     },
-    is_rejected: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    }
   }, {
     sequelize,
     tableName: 'report_post',

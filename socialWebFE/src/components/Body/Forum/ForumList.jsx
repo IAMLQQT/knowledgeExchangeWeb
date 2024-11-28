@@ -7,9 +7,9 @@ import { confirmAlert } from "react-confirm-alert";
 import axios from "axios";
 import { useAuth } from "../../../AuthProvider.jsx";
 import { toast } from "react-toastify";
-function Post({ post, setRefresher, }) {
-  const { post_id, title, tagsString, user, created_at, likeCount, commentCount, post_status, hiddenBy, forum } =
-    post;
+function Forum({ forum, setRefresher, }) {
+  const { forum_id, forum_name, forum_description, post_count, user, created_at, forum_status } =
+    forum;
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -19,11 +19,9 @@ function Post({ post, setRefresher, }) {
   let date_string = moment(date).format("LLL");
 
 
-  const handelHidePost = (post_id, RoleID) => {
-    console.log(post_id);
-
+  const handelHideForum = (forum_id) => {
     confirmAlert({
-      title: `Hide Post "${title}"!`,
+      title: `Hide Forum "${forum_name}"!`,
       message: "Are you sure to hide this post?",
       buttons: [
         {
@@ -31,8 +29,8 @@ function Post({ post, setRefresher, }) {
           onClick: () => {
             axios
               .patch(
-                `${SERVER_DOMAIN}/hidePost`,
-                { post_id, RoleID }, // Đảm bảo gửi đúng dữ liệu
+                `${SERVER_DOMAIN}/admin/hideForum`,
+                { forum_id }, // Đảm bảo gửi đúng dữ liệu
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -40,12 +38,12 @@ function Post({ post, setRefresher, }) {
                 }
               )
               .then(() => {
-                toast.success("Post hidden successfully!", {
+                toast.success("Forum hidden successfully!", {
                   position: toast.POSITION.TOP_CENTER,
                   autoClose: 5000,
                 });
                 setRefresher((prev) => !prev);
-                navigate("/admin/postmanagement?post_status=0&limit=5&page=1");
+                navigate("/admin/forummanagement?forum_status=0&limit=5&page=1");
               })
               .catch((err) => {
                 console.error(err);
@@ -63,11 +61,10 @@ function Post({ post, setRefresher, }) {
       ],
     });
   };
-  const handelAcctivePost = (post_id) => {
-    console.log(post_id);
+  const handelAcctiveForum = (forum_id) => {
 
     confirmAlert({
-      title: `Active Post "${title}"!`,
+      title: `Active Forum "${forum_name}"!`,
       message: "Are you sure to active this post?",
       buttons: [
         {
@@ -75,8 +72,8 @@ function Post({ post, setRefresher, }) {
           onClick: () => {
             axios
               .patch(
-                `${SERVER_DOMAIN}/activePost`,
-                { post_id }, // Đảm bảo gửi đúng dữ liệu
+                `${SERVER_DOMAIN}/admin/activeForum`,
+                { forum_id }, // Đảm bảo gửi đúng dữ liệu
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -84,16 +81,12 @@ function Post({ post, setRefresher, }) {
                 }
               )
               .then(() => {
-                toast.success("Post Active successfully!", {
+                toast.success("Forum Active successfully!", {
                   position: toast.POSITION.TOP_CENTER,
                   autoClose: 5000,
                 });
                 setRefresher((prev) => !prev);
-                if (location.pathname.startsWith("/admin")) {
-                  navigate("/admin/postmanagement?post_status=1&limit=5&page=1");
-                } else {
-                  navigate(`/profile/${user.user_id}`); // Quay lại trang trước
-                }
+                navigate("/admin/forummanagement?forum_status=1&limit=5&page=1");
               })
               .catch((err) => {
                 console.error(err);
@@ -115,38 +108,21 @@ function Post({ post, setRefresher, }) {
     <div className="div flex a-center">
       <div className="post flex">
         <div className="stats">
-          <p>{likeCount} Likes</p>
-          <p>{commentCount} Comments</p>
+          <p>{post_count}</p>
         </div>
         <div className="question">
-          <div className="forum">
-            <Link to={`/forum/${forum?.forum_id}`}>
-              <span className="forum_name"> {forum?.forum_name}</span>
-            </Link>
-          </div>
           {homeMatch ? (
             <>
-              <Link to={`/admin/postmanagement/post/${post_id}`}>
-                <h3 className="title">{title}</h3>
+              <Link to={`/admin/forummanagement/${forum_id}`}>
+                <h3 className="title">{forum_name}</h3>
               </Link>
             </>
           ) : (
-            <Link to={`/post/${post_id}`}>
-              <h3 className="title">{title}</h3>
+            <Link to={`/forum/${forum_id}`}>
+              <h3 className="title">{forum_name}</h3>
             </Link>
           )}
-          <div className="tags flex ">
-            {tagsString
-              ?.split(",")
-              .map((tag) => (
-                <p key={tag}>{tag}</p>
-              ))}
-          </div>
-          {post_status === true && (
-            <p style={{ color: "red" }}>
-              This post has been hidden by: {hiddenBy}
-            </p>
-          )}
+          <p className="forum_description">{forum_description}</p>
           <div className="post-info flex a-center">
             <img crossOrigin="anonymus" src={user?.profile_picture} alt="" />
             <p
@@ -160,19 +136,19 @@ function Post({ post, setRefresher, }) {
       </div>
       {homeMatch ? (
         <>
-          {post_status === false && (
+          {forum_status === false && (
             <button
               class="delete"
-              onClick={() => handelHidePost(post_id, 'admin')}
+              onClick={() => handelHideForum(forum_id)}
 
             >
               <i class="fa-solid fa-xmark"></i>
             </button>
           )}
-          {post_status === true && hiddenBy === 'admin' && (
+          {forum_status === true && (
             <button
               class="delete"
-              onClick={() => handelAcctivePost(post_id)}
+              onClick={() => handelAcctiveForum(forum_id)}
 
             >
               <i class="fa-solid fa-check"></i>
@@ -182,10 +158,10 @@ function Post({ post, setRefresher, }) {
         </>
       ) : (
         <>
-          {post_status === true && hiddenBy === 'user' && (
+          {forum_status === true && (
             <button
               class="delete"
-              onClick={() => handelAcctivePost(post_id)}
+              onClick={() => handelAcctiveForum(forum_id)}
 
             >
               <i class="fa-solid fa-check"></i>
@@ -198,4 +174,4 @@ function Post({ post, setRefresher, }) {
   );
 }
 
-export default Post;
+export default Forum;

@@ -1,6 +1,6 @@
 const sharp = require('sharp');
 const catchAsync = require('../utils/catchAsync');
-const { user, account, friendship, friendrequest, role, posts, likes, tags } = require('../models/models');
+const { user, account, friendship, friendrequest, role, posts, likes, tags, forum } = require('../models/models');
 const AppError = require('../utils/appError');
 const path = require('path');
 const fs = require('fs');
@@ -8,22 +8,22 @@ const { Op, Sequelize, where } = require('sequelize');
 const { sequelize } = require('../models/models');
 const { UserInfo } = require('firebase-admin/auth');
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-    const allUsers = await user.findAll({});
-    res.status(200).json({ allUsers });
+  const allUsers = await user.findAll({});
+  res.status(200).json({ allUsers });
 });
 
 exports.getAllAccounts = catchAsync(async (req, res, next) => {
-    const allAccounts = await account.findAll({});
-    res.status(200).json({ allAccounts });
+  const allAccounts = await account.findAll({});
+  res.status(200).json({ allAccounts });
 });
 exports.getAllUserAccounts = catchAsync(async (req, res, next) => {
   const allUserAccounts = await user.findAll({
-      include: {
-          model: account,
-          as: "account",
-          attributes: ['accountID', 'email', 'account_status', "RoleID"], 
-      },
-      attributes: ['user_id', 'first_name', 'last_name', 'accountID', 'profile_picture', 'bio', 'nick_name'], // Các trường bạn muốn lấy từ bảng user
+    include: {
+      model: account,
+      as: "account",
+      attributes: ['accountID', 'email', 'account_status', "RoleID"],
+    },
+    attributes: ['user_id', 'first_name', 'last_name', 'accountID', 'profile_picture', 'bio', 'nick_name'], // Các trường bạn muốn lấy từ bảng user
   });
 
   res.status(200).json({ allUserAccounts });
@@ -49,20 +49,20 @@ exports.updateUserStatus = catchAsync(async (req, res, next) => {
   if (newStatus === 'SUSPENDED') {
     const suspendUntil = new Date();
     suspendUntil.setDate(suspendUntil.getDate() + 15);
-  
+
     await accountInfo.update({
       account_status: newStatus,
       suspendedUntil: suspendUntil.getTime()
     });
-    
+
     return res.status(200).json({
-        status: 'success',
-        message: `User ${accountID} suspended successfully and will be released on ${suspendUntil}.`
+      status: 'success',
+      message: `User ${accountID} suspended successfully and will be released on ${suspendUntil}.`
     });
   }
   await accountInfo.update({
     account_status: newStatus,
-    suspendedUntil: null 
+    suspendedUntil: null
   });
 
   res.status(200).json({
@@ -83,8 +83,8 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
       as: "Role",
     },
   });
-  console.log("đay là " , accountInfo);
-  
+  console.log("đay là ", accountInfo);
+
   if (!accountInfo) {
     return res.status(404).json({ status: 'failed', message: 'Account not found.' });
   }
@@ -96,7 +96,7 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
       message: 'Only accounts with ACTIVE status can update roles.',
     });
   }
-  
+
   // Cập nhật RoleID của tài khoản
   await account.update(
     { RoleID: newRoleID },
@@ -112,7 +112,7 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
 exports.getPostsManagement = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const page = parseInt(req.query.page, 10) || 1;
-  const post_status = parseInt(req.query.post_status) ;
+  const post_status = parseInt(req.query.post_status);
   // const userIdToken = req.user.user_id;
   const offset = (page - 1) * limit;
   const sorted = req.query.sorted;
@@ -169,16 +169,22 @@ exports.getPostsManagement = catchAsync(async (req, res, next) => {
         as: 'tag_id_tags',
         attributes: ['tag_name'],
       },
+      {
+        model: forum,
+        as: 'forum',
+        required: false,
+        attributes: ['forum_id', 'forum_name'],
+      },
     ],
-    where: { original_post_id: null,  post_status: post_status},
-    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy'],
+    where: { original_post_id: null, post_status: post_status || "0" },
+    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy', "forum_id"],
     order: [['created_at', 'DESC']],
   });
 
   if (!newsfeed) {
     return next(new AppError('Error while getting newsfeed', 404));
   }
- 
+
   const postsWithCounts = newsfeed.map((post) => {
     const commentCount = post.commentPost.length;
     const likeCount = post.likes.length;

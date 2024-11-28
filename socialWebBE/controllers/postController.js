@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 const { Op, Sequelize, where } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
-const { sequelize, posts, friendship, tags, tags_posts, bookmark } = require('../models/models');
+const { sequelize, posts, friendship, tags, tags_posts, bookmark, forum } = require('../models/models');
 const AppError = require('../utils/appError');
 const moment = require('moment');
 const { comments, likes, user } = require('../models/models');
@@ -68,9 +68,23 @@ exports.getPosts = catchAsync(async (req, res, next) => {
         as: 'tag_id_tags',
         attributes: ['tag_name'],
       },
+      {
+        model: forum,
+        as: 'forum',
+        required: false,
+        attributes: ['forum_id', 'forum_name'],
+      },
     ],
-    where: { forum_id: null,original_post_id: null, post_status: post_status || "0" },
-    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy'],
+    where: {
+      original_post_id: null, post_status: post_status || "0",
+      [Op.or]: [
+        { forum_id: null }, // Bài không thuộc forum nào
+        Sequelize.literal(
+          `(SELECT forum_status FROM forum WHERE forum.forum_id = posts.forum_id) != 1`
+        ), // Bài thuộc forum có forum_status != 1
+      ],
+    },
+    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy', "forum_id"],
     order: [['created_at', 'DESC']],
   });
 
@@ -231,8 +245,11 @@ exports.getPostDetailWithoutToken = catchAsync(async (req, res, next) => {
     where: { post_id: postId },
     include: [
       {
-        model: comments,
-        as: 'comments',
+        model: posts,
+        as: 'commentPost',
+        where: { original_post_id: postId }, // Lọc các bài viết có original_post_id trùng với post_id
+        required: false, // Để tránh lỗi nếu không có comment
+        attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
         include: [
           {
             model: user,
@@ -255,6 +272,12 @@ exports.getPostDetailWithoutToken = catchAsync(async (req, res, next) => {
         model: tags,
         as: 'tag_id_tags',
         attributes: ['tag_name'],
+      },
+      {
+        model: forum,
+        as: 'forum',
+        required: false,
+        attributes: ['forum_id', 'forum_name'],
       },
     ],
   });

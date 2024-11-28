@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.ENUM('user','admin'),
       allowNull: true
     },
+    created_at: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
     forum_id: {
       type: DataTypes.STRING(30),
       allowNull: true,
@@ -47,7 +51,12 @@ module.exports = function(sequelize, DataTypes) {
         model: 'forum',
         key: 'forum_id'
       }
-    }
+    },
+    report_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0
+    },
   }, {
     sequelize,
     tableName: 'posts',

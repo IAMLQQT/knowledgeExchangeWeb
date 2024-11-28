@@ -232,7 +232,7 @@ function Comment({
                   type="text"
                   placeholder="Write something..."
                   value={userComment}
-                  onChange={(e) => setUserComment(e.target.value)} 
+                  onChange={(e) => setUserComment(e.target.value)}
                 ></textarea>
                 <img
                   src="/comment-icon.png"
@@ -248,50 +248,57 @@ function Comment({
             </p>
           </>
         ) : (
-          <button className="rely-button" onClick={handelRelyButton}>Rely</button>
+          <div>
+            {token && <button className="rely-button" onClick={handelRelyButton}>Rely</button>}
+          </div>
+         
         )}
         {/* <RelyComment /> */}
       </div>
 
-      {homeMatch ? (
-        <>
-          <Outlet />
-        </>
-      ) : (
-        <button
-          type="button"
-          className="modify-button"
-          onClick={() => setIsDropdown(true)}
-        >
-          <i className="fa-solid fa-ellipsis"></i>
-        </button>
-      )}
-      {isDropdown && (
-        <ul className="modify-dropdown" ref={modalRef}>
-          {userId === comment?.user?.user_id && (
-            <>
-              <li>
-                <button type="button" onClick={handleEditButton}>
-                  Edit
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={handleDeleteComment}>
-                  Delete
-                </button>
-              </li>
-            </>
-          )}
-          {userId !== comment?.user?.user_id && (
-            <>
-              <li>
-                <button type="button">Report</button>
-              </li>
-            </>
-          )}
-        </ul>
-      )}
-    </div>
+      {
+        homeMatch ? (
+          <>
+            <Outlet />
+          </>
+        ) : (
+          <button
+            type="button"
+            className="modify-button"
+            onClick={() => setIsDropdown(true)}
+          >
+            <i className="fa-solid fa-ellipsis"></i>
+          </button>
+        )
+      }
+      {
+        isDropdown && (
+          <ul className="modify-dropdown" ref={modalRef}>
+            {userId === comment?.user?.user_id && (
+              <>
+                <li>
+                  <button type="button" onClick={handleEditButton}>
+                    Edit
+                  </button>
+                </li>
+                <li>
+                  <button type="button" onClick={handleDeleteComment}>
+                    Delete
+                  </button>
+                </li>
+              </>
+            )}
+            {userId !== comment?.user?.user_id && (
+              <>
+                <li>
+                  <button type="button">Report</button>
+                </li>
+              </>
+            )}
+          </ul>
+        )
+      }
+    </div >
   );
 }
 

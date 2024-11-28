@@ -475,7 +475,7 @@ export default function PostDetail() {
 
       )}
       <div className="post-detail-comment">
-        {postDetail?.commentPost.map((comment) => (
+        {postDetail?.commentPost?.map((comment) => (
           <Comment
             comment={comment}
             key={comment.comment_id}

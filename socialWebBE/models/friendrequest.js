@@ -25,6 +25,10 @@ module.exports = function(sequelize, DataTypes) {
         key: 'user_id'
       }
     },
+    created_at: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
     request_status: {
       type: DataTypes.BOOLEAN,
       allowNull: false

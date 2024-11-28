@@ -18,7 +18,7 @@ const sequelize = new Sequelize(databaseName, "root", password, {
     },
 });
 //Define model
-const { user, account, role, friendship, friendrequest, bookmark, comments, likes, posts, tags, tags_posts, report_post, forum } = initModel(sequelize);
+const { user, account, role, friendship, friendrequest, bookmark, likes, posts, tags, tags_posts, report_post, forum } = initModel(sequelize);
 sequelize.addHook('beforeCount', function (options) {
     if (this._scope.include && this._scope.include.length > 0) {
         options.distinct = true;
@@ -69,7 +69,6 @@ account.prototype.createPasswordResetToken = function () {
 };
 account.removeAttribute('id');
 posts.removeAttribute('id');
-comments.removeAttribute('id');
 
 module.exports = {
     sequelize,
@@ -79,7 +78,6 @@ module.exports = {
     friendship, 
     friendrequest, 
     bookmark, 
-    comments, 
     likes, 
     posts, 
     tags, 

@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../../AuthProvider";
 import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
 import moment from "moment";
 const customStyles = {
   content: {
@@ -27,13 +28,13 @@ const customStyles = {
 };
 Modal.setAppElement("#root");
 // eslint-disable-next-line react/prop-types
-function CreatePostModal({ modalIsOpen, setIsOpen, user, setRefresher}) {
+function CreatePostModal({ modalIsOpen, setIsOpen, user, setRefresher }) {
   const { token } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [code, setCode] = useState("");
   const [Tags, setTags] = useState([]);
-
+  const { forum_id } = useParams();
   const [beforeUnloadListenerAdded, setBeforeUnloadListenerAdded] =
     useState(false);
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
@@ -87,7 +88,7 @@ function CreatePostModal({ modalIsOpen, setIsOpen, user, setRefresher}) {
           },
           {
             label: "No",
-            onClick: () => {},
+            onClick: () => { },
           },
         ],
       });
@@ -116,17 +117,22 @@ function CreatePostModal({ modalIsOpen, setIsOpen, user, setRefresher}) {
     if (title.length < 15 || content.length < 220) return;
     document.querySelector(".post-button").setAttribute("disabled", true);
     document.querySelector(".post-button").style.cursor = "not-allowed";
+    const apiEndpoint = forum_id
+      ? `${SERVER_DOMAIN}/createPostToForums`
+      : `${SERVER_DOMAIN}/createPost`
+    const payload = {
+      user_id: user.id,
+      title,
+      content,
+      code,
+      Tags,
+      created_at: moment().unix(),
+      ...(forum_id && { forum_id })
+    };
     axios
       .post(
-        SERVER_DOMAIN + "/createPost",
-        {
-          user_id: user.id,
-          title,
-          content,
-          code,
-          Tags,
-          created_at: moment().unix(),
-        },
+        apiEndpoint,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,

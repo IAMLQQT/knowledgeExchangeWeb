@@ -61,7 +61,6 @@ router.get(
 );
 router.get(
   '/getAllForums',
-  authController.protect,
   forumController.getAllForums,
 );
 router.post(
@@ -71,7 +70,10 @@ router.post(
 );
 router.get(
   '/getPostForum/:forum_id',
-  authController.protect,
   forumController.getPostForum,
+);
+router.get(
+  '/getForumById/:forum_id',
+  forumController.getForumById,
 );
 module.exports = router;
