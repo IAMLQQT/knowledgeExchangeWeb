@@ -62,25 +62,38 @@ exports.editComment = catchAsync(async (req, res, next) => {
 });
 
 exports.getCommentReplies = catchAsync(async (req, res, next) => {
-  const post_id = req.query.post_id;
+  const { post_id } = req.body;
 
   try {
-    // Lấy các bình luận chính (original_post_id là null)
-    const mainComments = await posts.findAll({
-      where: { post_id, original_post_id: { [Op.ne]: null } },
-      attributes: ["post_id", "content", "created_at", "user_id"],
-      include: [
-        {
-          model: user,
-          as: "user",
-          attributes: ["user_id", "first_name", "last_name", "profile_picture"],
-        },
-      ],
-    });
+    // Hàm đệ quy để xây dựng cây bình luận
+    const buildCommentTree = async (parentId) => {
+      // Lấy các replies trực tiếp từ DB
+      const replies = await posts.findAll({
+        where: { original_post_id: parentId },
+        attributes: ["post_id", "content", "created_at", "user_id", "original_post_id"],
+        include: [
+          {
+            model: user,
+            as: "user",
+            attributes: ["user_id", "first_name", "last_name", "profile_picture"],
+          },
+        ],
+      });
 
-    // Lấy tất cả các bình luận trả lời (original_post_id không null)
-    const allReplies = await posts.findAll({
-      where: { original_post_id: post_id},
+      // Gọi đệ quy để lấy replies của các replies này
+      const repliesWithChildren = await Promise.all(
+        replies.map(async (reply) => ({
+          ...reply.toJSON(),
+          replies: await buildCommentTree(reply.post_id), // Đệ quy để lấy cấp con
+        }))
+      );
+
+      return repliesWithChildren;
+    };
+
+    // Lấy các bình luận chính (original_post_id là null hoặc bằng post_id gốc)
+    const mainComments = await posts.findAll({
+      where: { original_post_id: post_id },
       attributes: ["post_id", "content", "created_at", "user_id", "original_post_id"],
       include: [
         {
@@ -91,36 +104,29 @@ exports.getCommentReplies = catchAsync(async (req, res, next) => {
       ],
     });
 
-    // Tạo cấu trúc cha-con (parent-child)
-    const commentMap = new Map();
+    // Xây dựng cấu trúc cây từ các bình luận chính
+    const commentTree = await Promise.all(
+      mainComments.map(async (comment) => ({
+        ...comment.toJSON(),
+        replies: await buildCommentTree(comment.post_id),
+      }))
+    );
 
-    // Map main comments
-    mainComments.forEach((comment) => {
-      commentMap.set(comment.post_id, { ...comment.toJSON(), replies: [] });
-    });
-
-    // Map replies vào bình luận chính
-    allReplies.forEach((reply) => {
-      const parentComment = commentMap.get(reply.original_post_id);
-      if (parentComment) {
-        parentComment.replies.push(reply.toJSON());
-      }
-    });
-
-    // Chuyển Map thành danh sách các bình luận
-    const commentsWithReplies = Array.from(commentMap.values());
-
-    // Trả về dữ liệu
-    if (commentsWithReplies.length === 0) {
+    // Trả về kết quả
+    if (commentTree.length === 0) {
       return next(new AppError("There are no comments or replies!", 200));
     }
 
-    return res.status(200).json(commentsWithReplies);
+    return res.status(200).json({
+      status: "success",
+      data: commentTree,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 // exports.getCommentReplies = catchAsync(async (req, res, next) => {
 //   const post_id = req.query.post_id;

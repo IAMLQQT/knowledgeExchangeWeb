@@ -11,7 +11,7 @@ const PostManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [refresher, setRefresher] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState("0");
     const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
     const page = useRef(1);
     const { token } = useAuth();
@@ -99,14 +99,14 @@ const PostManagement = () => {
                 <nav>
                     <ul className='flex '>
                         <li
-                            className={activeTab === 0 ? 'active-tab' : ''}
-                            onClick={() => handleTabClick(0)}
+                            className={activeTab === "0" ? 'active-tab' : ''}
+                            onClick={() => handleTabClick("0")}
                         >
                             Active Post
                         </li>
                         <li
-                            className={activeTab === 1 ? 'active-tab' : ''}
-                            onClick={() => handleTabClick(1)}
+                            className={activeTab === "1" ? 'active-tab' : ''}
+                            onClick={() => handleTabClick("1")}
                         >
                             Hidden Post
                         </li>
