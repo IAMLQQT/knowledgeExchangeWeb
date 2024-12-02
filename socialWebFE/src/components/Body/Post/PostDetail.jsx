@@ -2,7 +2,7 @@ import { Code } from "react-content-loader";
 import "../../../scss/PostDetail.scss";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../../AuthProvider.jsx";
 import CodeBlock from "../Message/CodeBlock.jsx";
 import axios from "axios";
@@ -21,6 +21,8 @@ export default function PostDetail() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdown, setIsDropdown] = useState(false);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const isAdminView = location.pathname.includes('/admin');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isNotFound, setIsNotFound] = useState(false);
   const [isModifyOpen, setModifyOpen] = useState(false);
@@ -296,7 +298,7 @@ export default function PostDetail() {
       .then((res) => {
         setPostDetail(res.data.data);
         setIsLoading(false);
-        console.log("postdetail", res.data.data.commentPost);
+        console.log("postdetail", postDetail);
       })
       .catch((err) => {
         setIsNotFound(true);
@@ -325,9 +327,16 @@ export default function PostDetail() {
   if (isNotFound)
     return (
       <div className="post-not-found">
-        <h2>Post not found!</h2>
+        <h2>Post not found! </h2>
       </div>
     );
+  if(postDetail?.post_status != "0" && !isAdminView) {
+    return (
+      <div className="post-not-found">
+        <h2>This Post is not accessible or has been hidden! </h2>
+      </div>
+    );
+  }
   if (isLoading) {
     return <Code />;
   }

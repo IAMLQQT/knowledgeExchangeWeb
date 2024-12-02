@@ -19,12 +19,7 @@ const PostManagement = () => {
     const fetchPosts = () => {
         page.current += 1;
         axios
-            .get(`${SERVER_DOMAIN}/admin/getPostsManagement`, {
-                params: {
-                    post_status: activeTab,
-                    limit: 5,
-                    page: page.current
-                },
+            .get(`${SERVER_DOMAIN}/admin/getPostsManagement?post_status=${activeTab}&page=${page.current}&limit=5`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -45,12 +40,7 @@ const PostManagement = () => {
 
     useEffect(() => {
         axios
-            .get(`${SERVER_DOMAIN}/admin/getPostsManagement`, {
-                params: {
-                    post_status: activeTab,
-                    limit: 5,
-                    page: page.current
-                },
+            .get(`${SERVER_DOMAIN}/admin/getPostsManagement?post_status=${activeTab}&page=${page.current}&limit=5`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

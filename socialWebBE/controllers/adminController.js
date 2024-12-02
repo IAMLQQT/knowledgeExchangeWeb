@@ -112,7 +112,8 @@ exports.updateUserRole = catchAsync(async (req, res, next) => {
 exports.getPostsManagement = catchAsync(async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10;
   const page = parseInt(req.query.page, 10) || 1;
-  const post_status = parseInt(req.query.post_status);
+  const post_status = parseInt(req.query.post_status) || null;
+  const userId = req.query.userId || null;
   // const userIdToken = req.user.user_id;
   const offset = (page - 1) * limit;
   const sorted = req.query.sorted;

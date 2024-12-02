@@ -34,7 +34,7 @@ exports.getForumById = catchAsync(async (req, res, next) => {
   }
   const forumData = await forum.findOne({
     where: { forum_id },
-    attributes: ['forum_id', 'forum_name', 'forum_description', 'created_at', 'post_count'],
+    attributes: ['forum_id', 'forum_name', 'forum_description', 'created_at', 'forum_status', 'post_count'],
   });
   if (!forumData) {
     return res.status(404).json({

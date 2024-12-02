@@ -43,7 +43,7 @@ function Forum({ forum, setRefresher, }) {
                   autoClose: 5000,
                 });
                 setRefresher((prev) => !prev);
-                navigate("/admin/forummanagement?forum_status=0&limit=5&page=1");
+                navigate("/admin/forummanagement  ");
               })
               .catch((err) => {
                 console.error(err);

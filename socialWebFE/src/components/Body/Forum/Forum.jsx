@@ -73,14 +73,6 @@ const ForumManagement = () => {
     const filteredForums = forums.filter((forum) =>
         (`${forum.forum_name} `).toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const handleTabClick = (status) => {
-        setActiveTab(status);
-        setForums([]); // Reset danh sách bài viết
-        setHasMore(true); // Cho phép tải thêm bài viết
-        page.current = 1; // Reset trang về 1
-        setRefresher(!refresher); // Trigger reload
-    };
     return (
         <div className="main-page">
             <div className="management">

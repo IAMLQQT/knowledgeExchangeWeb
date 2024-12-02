@@ -163,14 +163,16 @@ exports.createPost = catchAsync(async (req, res, next) => {
 });
 exports.getPostDetail = catchAsync(async (req, res, next) => {
   const { postId } = req.params;
+
+  // Tìm bài viết và liên kết với forum
   const post = await posts.findOne({
     where: { post_id: postId },
     include: [
       {
         model: posts,
         as: 'commentPost',
-        where: { original_post_id: postId }, // Lọc các bài viết có original_post_id trùng với post_id
-        required: false, // Để tránh lỗi nếu không có comment
+        where: { original_post_id: postId },
+        required: false,
         attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
         include: [
           {
@@ -214,10 +216,15 @@ exports.getPostDetail = catchAsync(async (req, res, next) => {
       {
         model: bookmark,
         as: "bookmarks"
-      }
+      },
+      {
+        model: forum, // Liên kết với forum để lấy trạng thái
+        as: "forum",
+        required: false,
+        attributes: ['forum_status', 'forum_name'],
+      },
     ],
   });
-
   if (!post) {
     return next(new AppError("Couldn't find post!", 404));
   }
@@ -230,6 +237,7 @@ exports.getPostDetail = catchAsync(async (req, res, next) => {
   const isSaved = !!postSanitized.bookmarks.find(
     (user) => user.user_id === req.user.user_id
   );
+
   // Lấy các tags và chuyển thành chuỗi
   const tagsString = postSanitized.tag_id_tags.map(tag => tag.tag_name).join(', ');
 
@@ -237,8 +245,10 @@ exports.getPostDetail = catchAsync(async (req, res, next) => {
   postSanitized.isLiked = isLiked;
   postSanitized.tags = tagsString;
   postSanitized.isSaved = isSaved;
+
   res.status(200).json({ status: 'success', data: postSanitized });
 });
+
 exports.getPostDetailWithoutToken = catchAsync(async (req, res, next) => {
   const { postId } = req.params;
   const post = await posts.findOne({
