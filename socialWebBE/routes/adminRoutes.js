@@ -78,4 +78,11 @@ router
         authController.restrictTo(['admin']),
         forumController.activeForum,
     );
+router
+    .route('/getReportPost')
+    .get(
+        authController.protect,
+        authController.restrictTo(['admin']),
+        adminController.getReportPost,
+    );
 module.exports = router;

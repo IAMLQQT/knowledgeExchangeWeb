@@ -62,7 +62,6 @@ module.exports = async (socket) => {
                   });
                 }
               });
-
             promises.push(promise);
           }
         });
@@ -122,7 +121,7 @@ module.exports = async (socket) => {
   // Gửi tin nhắn (hỗ trợ cả chat 1-1 và nhóm)
   socket.on('newMessage', async (data) => {
     const { recipient_id, group_id, message, timestamp } = data;
-    
+    console.log("message:", data)
     // Validate input
     if (!recipient_id && !group_id) {
       return socket.emit('messageError', { 
@@ -192,10 +191,7 @@ module.exports = async (socket) => {
       const messageData = {
         user_id: user_id,
         message: message,
-        timestamp: timestamp,
-        ...(isGroupChat ? { 
-          username: userProfile.username || userProfile.name 
-        } : {})
+        timestamp: timestamp
       };
 
       // Lưu tin nhắn
@@ -275,7 +271,7 @@ module.exports = async (socket) => {
         group_name: group_name,
         creator_id: creator_id,
         created_at: Date.now(),
-        last_message: 'Group created',
+        last_message: `Welcome to ${group_name} everyone`,
         timestamp: Date.now(),
         is_group_chat: true,
         members_count: Object.keys(groupMembers).length
@@ -286,7 +282,7 @@ module.exports = async (socket) => {
       // Khởi tạo messages cho nhóm
       await messagesRef.child(new_group_id).push({
         system_message: true,
-        message: `Group created by ${userProfile.username || creator_id}`,
+        message: `Welcome to ${group_name} everyone `,
         timestamp: Date.now(),
         user_id: creator_id
       });
@@ -391,16 +387,21 @@ module.exports = async (socket) => {
       
       for (const [groupId, groupMembers] of Object.entries(snapshot.val() || {})) {
         // Kiểm tra xem người dùng có trong nhóm không
+        console.log(groupMembers)
         if (groupMembers[userProfile.user_id]) {
           // Lấy thông tin chi tiết của nhóm
           const chatSnapshot = await chatsRef.child(groupId).once('value');
           const groupInfo = chatSnapshot.val();
-
-          userGroups.push({
-            group_id: groupId,
-            ...groupInfo,
-            user_role: groupMembers[userProfile.user_id].role
-          });
+          if (groupInfo.is_group_chat === true) {
+            console.log("chat info:",groupInfo)
+            userGroups.push({
+              group_id: groupId,
+              ...groupInfo,
+              user_role: groupMembers[userProfile.user_id].role,
+              group_members: Object.keys(groupMembers)
+            });
+          }
+         
         }
       }
 

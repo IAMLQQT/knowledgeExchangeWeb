@@ -24,6 +24,7 @@ import AdminHomePage from "./components/Admin/AdminPage/AdminHomePage";
 import UserManagement from "./components/Admin/AdminPage/Body/UserManagement";
 import PostManagement from "./components/Admin/AdminPage/Body/PostManagement";
 import ForumManagement from "./components/Admin/AdminPage/Body/ForumManagement";
+import ReportManagement from "./components/Admin/AdminPage/Body/ReportManagement";
 import ForumDetails from "./components/Body/Forum/ForumDetails";
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
               <Route path="postmanagement/post/:postId" element={<PostDetail />} />
               <Route path="forummanagement" element={<ForumManagement />} />
               <Route path="forummanagement/:forum_id" element={<ForumDetails />} />
+              <Route path="reportmanagement" element={<ReportManagement />} />
             </Route>
 
             <Route path="/admin/login" element={<AdminLogin />} />

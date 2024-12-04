@@ -200,3 +200,99 @@ exports.getPostsManagement = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ status: 'success', data: postsWithCounts });
 });
+
+exports.getReportPost = catchAsync(async (req, res, next) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const page = parseInt(req.query.page, 10) || 1;
+  const userId = req.query.userId || null;
+  // const userIdToken = req.user.user_id;
+  const offset = (page - 1) * limit;
+  const sorted = req.query.sorted;
+  let whereConditions = {};
+
+  // if (sorted === 'community') {
+  //   // Get following users' IDs
+  //   const friendships = await friendship.findAll({
+  //     where: { user_id: userId },
+  //     attributes: ['user_friend_id'],
+  //   });
+  //   const friendshipsID = friendships.map((f) => f.user_friend_id);
+  //   console.log(friendshipsID);
+
+  //   // Create OR conditions for community sorting
+  //   whereConditions = {
+  //     user_id: { [Op.in]: friendshipsID },
+  //   };
+  // } else if (userId) {
+  //   whereConditions.user_id = userId;
+  // }
+
+  const newsfeed = await posts.findAll({
+    offset,
+    limit,
+    include: [
+      {
+        model: posts,
+        as: 'commentPost',
+        required: false, // Để tránh lỗi nếu không có comment
+        attributes: ["post_id", "content", "created_at", "post_status", "user_id", "original_post_id"],
+        include: [
+          {
+            model: user,
+            as: 'user',
+            attributes: [
+              'user_id',
+              'first_name',
+              'last_name',
+              'profile_picture',
+            ],
+          },
+        ],
+      },
+      { model: likes, as: 'likes' },
+      {
+        model: user,
+        as: 'user',
+        attributes: ['user_id', 'first_name', 'last_name', 'profile_picture'],
+        where: whereConditions,
+      },
+      {
+        model: tags,
+        as: 'tag_id_tags',
+        attributes: ['tag_name'],
+      },
+      {
+        model: forum,
+        as: 'forum',
+        required: false,
+        attributes: ['forum_id', 'forum_name'],
+      },
+    ],
+    where: {
+      report_count: {
+        [Op.between]: [5, 10],
+      },
+      original_post_id: null,
+    },
+    attributes: ['title', 'created_at', 'post_id', 'post_status', 'hiddenBy', "forum_id" ,"report_count" ],
+    order: [['created_at', 'DESC']],
+  });
+
+  if (!newsfeed) {
+    return next(new AppError('Error while getting newsfeed', 404));
+  }
+
+  const postsWithCounts = newsfeed.map((post) => {
+    const commentCount = post.commentPost.length;
+    const likeCount = post.likes.length;
+    const tagsString = post.tag_id_tags.map(tag => tag.tag_name).join(', ');
+    return {
+      ...post.toJSON(),
+      commentCount,
+      likeCount,
+      tagsString
+    };
+  });
+
+  res.status(200).json({ status: 'success', data: postsWithCounts });
+});

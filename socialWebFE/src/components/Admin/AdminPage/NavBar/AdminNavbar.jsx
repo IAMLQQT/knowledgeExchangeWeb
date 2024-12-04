@@ -36,9 +36,9 @@ function AdminNavbar() {
           </Link>
         </li>
         <li>
-          <Link to="commentmanagement"
-            onClick={() => setTabSelected("commentmanagement")}
-            className={`${tabSelected === "commentmanagement" && "active"} `}
+          <Link to="reportmanagement"
+            onClick={() => setTabSelected("reportmanagement")}
+            className={`${tabSelected === "reportmanagement" && "active"} `}
           >
             <i className="fa-solid fa-id-card"></i>
             <p>Report Management</p>

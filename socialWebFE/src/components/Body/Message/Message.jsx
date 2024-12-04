@@ -9,6 +9,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Blocks, TailSpin } from "react-loader-spinner";
 import moment from "moment";
 import { Navigate, useNavigate } from "react-router-dom";
+import CreateGroupChatModal from "../Modals/CreateGroupChatModal";
 
 function Message() {
   const [socket, setSocket] = useState(null);
@@ -21,13 +22,21 @@ function Message() {
   const [messageInput, setMessageInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
+  const [activeTab, setActiveTab] = useState(0);
+  const [groupsInfo, SetGroupsInfo] = useState([]);
+  const [isGroupSelected, setIsGroupSelected] = useState(false);
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+
+
   const { token } = useAuth();
-  const { user } = useUser();
+  const { user, handleGetProfile } = useUser();
   const bottomRef = useRef();
   const prevLength = useRef(0);
   const page = useRef(1);
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
+  useEffect(handleGetProfile, []);
   const iconMap = {
     ":v": "😀",
     ":thumbsup:": "👍",
@@ -55,11 +64,6 @@ function Message() {
   function formatTimestamp(timestamp) {
     const currentDate = new Date();
     const inputDate = new Date(timestamp); // Convert Unix timestamp to milliseconds
-    console.log(
-      currentDate.toDateString(),
-      inputDate.toDateString(),
-      currentDate.toDateString() == inputDate.toDateString()
-    );
     if (currentDate.toDateString() == inputDate.toDateString()) {
       return moment.unix(timestamp / 1000).format("HH:mm");
     }
@@ -77,10 +81,22 @@ function Message() {
   };
   const handelChatGroup = () => {
     socket.emit('createGroup', {
-      group_name:"Thinh",
-      member_ids: ["yCBsFOX6dmMaBqz", "cvDE8obb79UycaG"]}
+      group_name: "FC Fan",
+      member_ids: ["qZSAuxk7ZBk3xc5", "cvDE8obb79UycaG"]
+    }
     )
+    setIsOpen(true);
   }
+  const handleClickChat = (roomId) => {
+    setIsGroupSelected(true);
+    setSelectedRoom(roomId);
+    console.log(selectedRoom);
+    setSelectedReceiverId(roomId);
+    console.log("đây là:", groupMembers);
+
+
+  }
+
   const handleSendMessage = (e) => {
     if (
       e.keyCode === 13 &&
@@ -105,6 +121,7 @@ function Message() {
         token,
         message: updatedMessage,
         recipient_id: selectedReceiverId,
+        group_id: selectedRoom,
         timestamp: timestamp,
       });
 
@@ -119,7 +136,8 @@ function Message() {
       setMessageInput("");
     }
   };
-
+  const handleShowModal = () => setModalVisible(true);
+  const handleCloseModal = () => setModalVisible(false);
   useEffect(() => {
     // Create the WebSocket connection
 
@@ -151,11 +169,16 @@ function Message() {
       }
       setChatInfo(chatInfo);
       console.log(chatInfo);
+      const userIds = !isGroupSelected ? userIdsMessaged.join(
+        ","
+      ) : groupsInfo.find(group => group.group_id === selectedRoom).group_members.join(',');
+      console.log(isGroupSelected);
+
+      console.log(userIds);
+
       axios
         .get(
-          `${SERVER_DOMAIN}/user/getInfoList?user_ids=${userIdsMessaged.join(
-            ","
-          )}`,
+          `${SERVER_DOMAIN}/user/getInfoList?user_ids=${userIds}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -163,23 +186,39 @@ function Message() {
           }
         )
         .then((res) => {
-          setRecipientInfo(res.data.data);
+          if (!isGroupSelected) {
+            setRecipientInfo(res.data.data);
+          } else {
+            setGroupMembers(res.data.data)
+          }
+
           console.log(res.data.data);
         })
         .catch((err) => {
           console.log(err);
         });
     });
-    newSocket.on("groupCreated",(data)=> {
+
+    newSocket.on("groupCreated", (data) => {
       console.log("da tao group", data)
     })
+
     setSocket(newSocket);
   }, [selectedRoom]);
   useEffect(() => {
     if (connected && socket) {
       socket.emit("getUserIdsMessaged");
+      socket.emit('getUserGroups');
+      socket.on('userGroupsResponse', (data) => {
+        const { groups } = data;
+        console.log(groups)
+        console.log(groups.map((group) => group.group_members));
+        SetGroupsInfo(groups);
+      });
     }
   }, [connected, socket]);
+
+
   useEffect(() => {
     if (!selectedRoom && !connected) return;
     socket.emit("getChatMessages", {
@@ -274,51 +313,108 @@ function Message() {
         visible={true}
       />
     );
+  const handleTabClick = (status) => {
+    setActiveTab(status);
+    if (status === 0) {
+      setIsGroupSelected(false);
+    }
+  };
   return (
     <div className="chat-page">
       <ChatHeader />
       <div className="chat-ctn">
         <div className="chat-list">
           <h2>Chat list</h2>
-          {recipientInfo?.map((chat) => (
-            <div
-              className={`message-info ${
-                chat.user_id === selectedReceiverId && "selected"
-              }`}
-              key={chat.user_id}
-              onClick={() => {
-                const roomId = chatInfo.find(
-                  (ch) => ch.recipient_id === chat.user_id
-                )?.room_id;
-                setSelectedReceiverId(chat.user_id);
-                setSelectedRoom(roomId);
-              }}
-            >
-              <img
-                src={chat.profile_picture}
-                alt="User Avatar"
-                crossOrigin="anonymous"
-                onError={(e) => {
-                  e.target.src = "/public/user.png";
-                }}
-              />
-              <div className="info">
-                <h4>
-                  {chat.first_name} {chat.last_name}
-                </h4>
-                {/* <p>
-                  {chatInfo.find((cv) => cv.sender_id === chat.user_id)
-                    ? ""
-                    : "You: "}
-                  {
-                    chatInfo.find((cv) => cv.recipient_id === chat.user_id)
-                      .last_message
-                  }
-                </p> */}
+          <nav>
+            <ul className='flex '>
+              <li
+                className={activeTab === 0 ? 'active-tab' : ''}
+                onClick={() => handleTabClick(0)}
+              >
+                Personal Chat
+              </li>
+              <li
+                className={activeTab === 1 ? 'active-tab' : ''}
+                onClick={() => handleTabClick(1)}
+              >
+                Group Chat
+              </li>
+            </ul>
+          </nav>
+          {activeTab === 0 ? (
+            <div>
+              {recipientInfo?.map((chat) => (
+                <div
+                  className={`message-info ${chat.user_id === selectedReceiverId && "selected"
+                    }`}
+                  key={chat.user_id}
+                  onClick={() => {
+                    const roomId = chatInfo.find(
+                      (ch) => ch.recipient_id === chat.user_id
+                    )?.room_id;
+                    setSelectedReceiverId(chat.user_id);
+                    setSelectedRoom(roomId);
+                    setIsGroupSelected(false);
+                  }}
+                >
+                  <img
+                    src={chat.profile_picture}
+                    alt="User Avatar"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      e.target.src = "/public/user.png";
+                    }}
+                  />
+                  <div className="info">
+                    <h4>
+                      {chat.first_name} {chat.last_name}
+                    </h4>
+                    {/* <p>
+          {chatInfo.find((cv) => cv.sender_id === chat.user_id)
+            ? ""
+            : "You: "}
+          {
+            chatInfo.find((cv) => cv.recipient_id === chat.user_id)
+              .last_message
+          }
+        </p> */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="group-info">
+              <div >
+                {chatInfo?.filter(item => item.is_group_chat)?.map(item => (
+                  <h3 onClick={() => {
+                    handleClickChat(item.group_id)
+                  }} key={item.group_name} className="group-mess-info">{item.group_name}</h3>
+                ))}
+              </div>
+              <div>
+                <button onClick={handleShowModal} className="add-group-chat">
+                  Tạo nhóm
+                </button>
+                {isModalVisible && (
+                  <div className="modal-overlay" onClick={handleCloseModal}>
+                    <div
+                      className="modal-content"
+                      onClick={(e) => e.stopPropagation()} // Ngăn sự kiện đóng khi click vào nội dung
+                    >
+                      <button className="close-btn" onClick={handleCloseModal}>
+                        &times;
+                      </button>
+                      <CreateGroupChatModal contacts={user?.contacts} socket={socket} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
-            <button onClick={handelChatGroup}>Tạo nhóm</button>
+          )
+
+          }
+
+
         </div>
         <div className="chat-box">
           <div className="message-ctn" id={"scrollableDiv"}>
@@ -356,18 +452,30 @@ function Message() {
                   .reverse()
                   .map((mess, index) => {
                     return (
-                      <p
-                        className={`chat-message ${
-                          mess?.user_id === user?.user?.user_id
-                            ? "user-message"
-                            : "incoming-message"
+                      <div className={`chat-message ${mess?.user_id === user?.user?.user_id
+                        ? "user-message"
+                        : "incoming-message"
                         }`}
                         key={index}
+                        timestamp={formatTimestamp(mess.timestamp)}>
+                        <div className="info-mess flex a-center">
+                          <img
+                            src={groupMembers.find(mem => mem.user_id === mess?.user_id)?.profile_picture}
+                            alt=""
+                            crossOrigin="anonymous"
+                            onError={(e) => {
+                              e.target.src = "./public/user.png";
+                            }} />
+                          <h3>{groupMembers.find(mem => mem.user_id === mess?.user_id)?.first_name}  {groupMembers.find(mem => mem.user_id === mess?.user_id)?.last_name}</h3>
+                        </div>
+                        <p
+
                         // eslint-disable-next-line react/no-unknown-property
-                        timestamp={formatTimestamp(mess.timestamp)}
-                      >
-                        {mess.message}
-                      </p>
+
+                        >
+                          {mess.message}
+                        </p>
+                      </div>
                     );
                   })}
               </InfiniteScroll>
@@ -387,6 +495,7 @@ function Message() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

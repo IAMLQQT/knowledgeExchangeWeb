@@ -8,7 +8,7 @@ import axios from "axios";
 import { useAuth } from "../../../AuthProvider.jsx";
 import { toast } from "react-toastify";
 function Post({ post, setRefresher, }) {
-  const { post_id, title, tagsString, user, created_at, likeCount, commentCount, post_status, hiddenBy, forum } =
+  const { post_id, title, tagsString, user, created_at, likeCount, commentCount, post_status, hiddenBy, forum, report_count } =
     post;
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const { token } = useAuth();
@@ -142,11 +142,18 @@ function Post({ post, setRefresher, }) {
                 <p key={tag}>{tag}</p>
               ))}
           </div>
-          {post_status === true && (
+          {post_status === true ? (
             <p style={{ color: "red" }}>
-              This post has been hidden by: {hiddenBy}
+              This post has been hidden by: {hiddenBy || "over 10 reports by another user"}
             </p>
+          ) : (
+            report_count > 5 && report_count <= 10 && (
+              <p style={{ color: "red" }}>
+                This post has {report_count} reports from other users
+              </p>
+            )
           )}
+
           <div className="post-info flex a-center">
             <img crossOrigin="anonymus" src={user?.profile_picture} alt="" />
             <p
@@ -160,24 +167,24 @@ function Post({ post, setRefresher, }) {
       </div>
       {homeMatch ? (
         <>
-          {post_status === false && (
+          {(post_status === false ||(report_count >= 5 && report_count <= 10)) && (
             <button
               class="delete"
               onClick={() => handelHidePost(post_id, 'admin')}
 
             >
-              <i class="fa-solid fa-xmark"></i>
+              <i class="fa-regular fa-eye-slash"></i>
             </button>
           )}
-          {post_status === true && hiddenBy === 'admin' && (
+          {((post_status === true && hiddenBy === 'admin') || (report_count >= 5 && report_count <= 10)) && (
             <button
               class="delete"
               onClick={() => handelAcctivePost(post_id)}
-
             >
               <i class="fa-solid fa-check"></i>
             </button>
           )}
+
 
         </>
       ) : (
