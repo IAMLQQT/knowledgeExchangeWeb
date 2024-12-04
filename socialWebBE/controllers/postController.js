@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 const { Op, Sequelize, where } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
-const { sequelize, posts, friendship, tags, tags_posts, bookmark, forum } = require('../models/models');
+const { sequelize, posts, friendship, tags, tags_posts, bookmark, forum, report_post } = require('../models/models');
 const AppError = require('../utils/appError');
 const moment = require('moment');
 const { comments, likes, user } = require('../models/models');
@@ -627,3 +627,53 @@ exports.activePost = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.reportPost = catchAsync(async (req, res) => {
+  const { user_id, post_id } = req.body; // Giả sử bạn truyền `user_id` và `post_id` qua body của request
+
+  try {
+    // Kiểm tra xem người dùng đã báo cáo bài viết này chưa
+    const existingReport = await report_post.findOne({
+      where: {
+        user_id: user_id,
+        post_id: post_id
+      }
+    });
+
+    // Nếu đã báo cáo, trả về thông báo lỗi
+    if (existingReport) {
+      return res.status(400).json({ message: 'You have already reported this post.' });
+    }
+
+    // Lưu thông tin báo cáo vào bảng `report_post`
+    await report_post.create({
+      user_id: user_id,
+      post_id: post_id
+    });
+
+    // Cập nhật số lượng báo cáo trong bảng `posts`
+    await posts.increment('report_count', {
+      by: 1,
+      where: {
+        post_id: post_id
+      }
+    });
+
+    // Kiểm tra số lượng báo cáo của bài post
+    const post = await posts.findOne({
+      where: { post_id: post_id }
+    });
+
+    if (post.report_count >= 10) {
+      // Nếu số báo cáo >= 10, thay đổi trạng thái bài post thành 1 (ẩn)
+      await posts.update({ post_status: 1 }, {
+        where: { post_id: post_id }
+      });
+      return res.status(200).json({ message: 'Post has been hidden due to excessive reports.' });
+    }
+
+    return res.status(200).json({ message: 'Post reported successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});

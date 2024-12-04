@@ -25,12 +25,15 @@ function Comment({
   const [curComment, setCurComment] = useState(comment.content);
   const [editTime, setEditTime] = useState(comment.updated_at);
   const [editedComment, setEditedComment] = useState(comment.content);
-
+  const [replies, setReplies] = useState([]);
+  const [showReplies, setShowReplies] = useState(false);
   const [userComment, setUserComment] = useState("");
   const SERVER_DOMAIN = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
   const homeMatch = useMatch("/admin/*");
   const { user } = useUser();
+
+  
   const handleEditComment = () => {
     setCurComment(editedComment);
     setIsEditing(false);
@@ -58,6 +61,29 @@ function Comment({
         });
       });
   };
+  useEffect(() => {
+    const fetchReplies = async () => {
+      try {
+        const response = await axios.get(`${SERVER_DOMAIN}/getCommentReplies`, {
+          params: { post_id: comment.post_id },
+        });
+        console.log("Fetched replies:", response.data.data);
+        setReplies(response.data.data); // Lưu dữ liệu replies vào state
+      } catch (error) {
+        console.error("Failed to fetch replies:", error);
+      }
+    };
+
+    if (comment?.post_id) {
+      fetchReplies(); // Gọi API khi có comment
+    }
+  }, [comment.post_id]); // Chạy lại khi post_id thay đổi
+
+  const handleShowReplies = () => {
+    setShowReplies(prevState => !prevState); // Toggle hiển thị replies
+  };
+
+
   const handelRelyButton = () => {
     setIsRely(true);
   }
@@ -206,7 +232,7 @@ function Comment({
               expanded={false}
               truncatedEndingComponent={"... "}
             >
-              <p>{curComment} </p>
+              <p>{curComment}  </p>
             </ShowMoreText>
             <p className="comment-time">
               {editTime
@@ -251,9 +277,26 @@ function Comment({
           <div>
             {token && <button className="rely-button" onClick={handelRelyButton}>Rely</button>}
           </div>
-         
+
         )}
-        {/* <RelyComment /> */}
+        <button onClick={handleShowReplies}>
+          {showReplies ? "Hide Replies" : `Show Replies (${replies.length})`}
+        </button>
+        {showReplies && (
+          <div className="replies">
+            {replies?.map((reply) => (
+              <RelyComment
+                key={reply.post_id}
+                comment={reply}
+                userId={userId}
+                setRefresher={setRefresher}
+                token={token}
+                postDetail={postDetail}
+                setPostDetail={setPostDetail}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {

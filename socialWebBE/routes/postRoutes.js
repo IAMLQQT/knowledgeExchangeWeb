@@ -40,7 +40,6 @@ router.get(
 router.post('/addComment', authController.protect, commentsController.addComment);
 router.get(
   '/getCommentReplies',
-  authController.protect,
   commentsController.getCommentReplies,
 );
 router.delete(
@@ -75,5 +74,10 @@ router.get(
 router.get(
   '/getForumById/:forum_id',
   forumController.getForumById,
+);
+router.post(
+  '/reportPost',
+  authController.protect,
+  postController.reportPost,
 );
 module.exports = router;

@@ -62,7 +62,12 @@ exports.editComment = catchAsync(async (req, res, next) => {
 });
 
 exports.getCommentReplies = catchAsync(async (req, res, next) => {
-  const { post_id } = req.body;
+  // Lấy post_id từ params
+  const  post_id  = req.query.post_id;
+
+  if (!post_id) {
+    return next(new AppError("post_id is required in the URL parameters!", 400));
+  }
 
   try {
     // Hàm đệ quy để xây dựng cây bình luận
@@ -93,7 +98,7 @@ exports.getCommentReplies = catchAsync(async (req, res, next) => {
 
     // Lấy các bình luận chính (original_post_id là null hoặc bằng post_id gốc)
     const mainComments = await posts.findAll({
-      where: { original_post_id: post_id },
+      where: { original_post_id: post_id }, // Sử dụng post_id từ params
       attributes: ["post_id", "content", "created_at", "user_id", "original_post_id"],
       include: [
         {
@@ -113,9 +118,6 @@ exports.getCommentReplies = catchAsync(async (req, res, next) => {
     );
 
     // Trả về kết quả
-    if (commentTree.length === 0) {
-      return next(new AppError("There are no comments or replies!", 200));
-    }
 
     return res.status(200).json({
       status: "success",
@@ -126,6 +128,7 @@ exports.getCommentReplies = catchAsync(async (req, res, next) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 
 // exports.getCommentReplies = catchAsync(async (req, res, next) => {
