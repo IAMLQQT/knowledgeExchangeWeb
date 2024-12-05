@@ -247,11 +247,50 @@ export default function PostDetail() {
     textarea.style.height = "auto";
     textarea.style.height = `${textarea.scrollHeight + 25}px`;
   };
-  const handleReportPost = () => {
-    toast.info("This feature is not available yet!", {
-      position: toast.POSITION.TOP_CENTER,
-      autoClose: 5000,
+  const handleReportPost = async () => {
+    console.log(postId);
+
+    confirmAlert({
+      title: `Report Post "${postDetail.title}"!`,
+      message: "Are you sure to report this post?",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => {
+            axios
+              .post(
+                `${SERVER_DOMAIN}/reportPost`,
+                { post_id: postId },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+              .then(() => {
+                toast.success("Post Report successfully!", {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+                navigate(-1);
+                setRefresher((prev) => !prev);
+              })
+              .catch((err) => {
+                const errorMessage = err.response?.data?.message || "An unexpected error occurred.";
+                toast.error(errorMessage, {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 5000,
+                });
+              });
+          },
+        },
+        {
+          label: "No",
+          onClick: () => { },
+        },
+      ],
     });
+
   };
   const handleSubmitComment = (e) => {
     e.preventDefault();
@@ -330,7 +369,7 @@ export default function PostDetail() {
         <h2>Post not found! </h2>
       </div>
     );
-  if(postDetail?.post_status != "0" && !isAdminView) {
+  if (postDetail?.post_status != "0" && !isAdminView) {
     return (
       <div className="post-not-found">
         <h2>This Post is not accessible or has been hidden! </h2>

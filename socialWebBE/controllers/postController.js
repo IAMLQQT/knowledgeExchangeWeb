@@ -600,38 +600,63 @@ exports.hidePost = catchAsync(async (req, res, next) => {
 exports.activePost = catchAsync(async (req, res, next) => {
   const { post_id } = req.body;
 
-
+  // Tìm bài viết
   const post = await posts.findOne({
     where: { post_id: post_id, original_post_id: null },
-    attributes: ['post_status'],
+    attributes: ['post_status', 'report_count'],
   });
 
   if (!post) {
     return next(new AppError('Post not found!', 404));
   }
 
+  const { post_status, report_count } = post;
 
-  if (post.post_status == '0') {
+  // Kiểm tra nếu bài viết đã active và không đủ report
+  if (post_status === 0 && report_count < 5) {
     return next(new AppError('Post is already active!', 400));
   }
 
+  // Nếu bài viết đã active nhưng có report_count >= 5
+  if (post_status === 0) {
+    await posts.update(
+      { report_count: 0 },
+      { where: { post_id: post_id, original_post_id: null } }
+    );
 
+    await report_post.destroy({
+      where: { post_id: post_id },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Post report count reset successfully!',
+    });
+  }
+
+  // Nếu bài viết không active, cập nhật trạng thái và reset report_count
   await posts.update(
-    { post_status: 0, hiddenBy: null },
+    { post_status: 0, hiddenBy: null, report_count: 0 },
     { where: { post_id: post_id, original_post_id: null } }
   );
 
+  await report_post.destroy({
+    where: { post_id: post_id },
+  });
+
   res.status(200).json({
     status: 'success',
-    message: 'Post has been hidden successfully!',
+    message: 'Post has been activated successfully!',
   });
 });
 
+
 exports.reportPost = catchAsync(async (req, res) => {
-  const { user_id, post_id } = req.body; // Giả sử bạn truyền `user_id` và `post_id` qua body của request
+  const { user_id } = req.user;
+  const { post_id } = req.body; 
 
   try {
-    // Kiểm tra xem người dùng đã báo cáo bài viết này chưa
+   
     const existingReport = await report_post.findOne({
       where: {
         user_id: user_id,
@@ -639,18 +664,18 @@ exports.reportPost = catchAsync(async (req, res) => {
       }
     });
 
-    // Nếu đã báo cáo, trả về thông báo lỗi
+  
     if (existingReport) {
       return res.status(400).json({ message: 'You have already reported this post.' });
     }
 
-    // Lưu thông tin báo cáo vào bảng `report_post`
+
     await report_post.create({
       user_id: user_id,
       post_id: post_id
     });
 
-    // Cập nhật số lượng báo cáo trong bảng `posts`
+  
     await posts.increment('report_count', {
       by: 1,
       where: {
@@ -658,13 +683,12 @@ exports.reportPost = catchAsync(async (req, res) => {
       }
     });
 
-    // Kiểm tra số lượng báo cáo của bài post
     const post = await posts.findOne({
       where: { post_id: post_id }
     });
 
     if (post.report_count >= 10) {
-      // Nếu số báo cáo >= 10, thay đổi trạng thái bài post thành 1 (ẩn)
+
       await posts.update({ post_status: 1 }, {
         where: { post_id: post_id }
       });
