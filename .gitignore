@@ -4,4 +4,4 @@ socialWebBE/backup/
 socialWebBE/utils/serviceAccountKey.json
 socialWebBE/config.env
 socialWebFE/node_modules/
-
+socialWebFE/.env
