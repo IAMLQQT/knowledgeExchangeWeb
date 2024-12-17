@@ -25,7 +25,7 @@
 
 ## [Overview](#Overview) <a id="Overview"></a>
 
-Đề tài " Xây dựng diễn đàn trao đổi kiến thức cho sinh viên công nghệ thông tin PTIT" nhằm mục đích xây dựng một nền tảng trực tuyến chuyên nghiệp, giúp sinh viên dễ dàng truy cập và chia sẻ kiến thức. 
+Đề tài "Xây dựng diễn đàn trao đổi kiến thức cho sinh viên công nghệ thông tin PTIT" nhằm mục đích xây dựng một nền tảng trực tuyến chuyên nghiệp, giúp sinh viên dễ dàng truy cập và chia sẻ kiến thức. 
 Mục tiêu chính là tạo ra một môi trường học tập hiệu quả, nơi sinh viên có thể trao đổi, thảo luận và học hỏi từ nhau cũng như từ các sinh viên trong trường chung chuyên ngành cũng như các sinh viên có niềm đam mê với công nghệ thông tin
 '
 
