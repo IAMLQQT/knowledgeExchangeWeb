@@ -1,6 +1,6 @@
 <h1 align="center"> Học viện Công nghệ Bưu chính viễn thông <br/>
     Đồ án tốt nghiệp - 
-   DIỄN ĐÀN TRAO ĐỔI KIẾN THỨC CHO SINH VIÊN CÔNG NGHỆ THÔNG TIN PTIT
+XÂY DỰNG DIỄN ĐÀN TRAO ĐỔI KIẾN THỨC CHO SINH VIÊN CÔNG NGHỆ THÔNG TIN PTIT
 </h1>
 
 ## [Table of Contents](#table-of-contents) <a id="table-of-contents"></a>
